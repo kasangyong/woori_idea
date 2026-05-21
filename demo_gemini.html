@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InterSteller — 우리은행 AI 행원 서비스 데모</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            woori: {
+              blue: '#0046AD',
+              dark: '#003087',
+              sky: '#EBF3FF',
+              light: '#F5F7FB',
+              accent: '#00A0E9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+    
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: #0F172A;
+      color: #E2E8F0;
+      overflow-x: hidden;
+    }
+
+    /* 모바일 프레임 스크롤바 숨기기 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 전화기 흔들림 진동 효과 */
+    .shake {
+      animation: shake-animation 0.5s infinite;
+    }
+    @keyframes shake-animation {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -2px) rotate(-1deg); }
+      20% { transform: translate(-3px, 0px) rotate(1deg); }
+      30% { transform: translate(0px, 2px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-1px, 2px) rotate(-1deg); }
+      60% { transform: translate(-3px, 1px) rotate(0deg); }
+      70% { transform: translate(2px, 1px) rotate(-1deg); }
+      80% { transform: translate(-1px, -1px) rotate(1deg); }
+      90% { transform: translate(2px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+
+    /* 맥박(파동) 애니메이션 */
+    .pulse-ring {
+      animation: pulse-ring-animation 1.5s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring-animation {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* 차트 및 시각 요소 강조 처리 */
+    .viz-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .viz-card.focus {
+      border-color: #0046AD !important;
+      box-shadow: 0 0 16px rgba(0, 70, 173, 0.3);
+      transform: scale(1.02);
+      background: #FFFFFF !important;
+      color: #0F172A !important;
+    }
+
+    /* 서명 캔버스 */
+    #sig-canvas {
+      border: 2px dashed #CBD5E1;
+      background-color: #F8FAFC;
+      cursor: crosshair;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6 flex flex-col justify-between">
+
+  <!-- 헤더 정보 영역 -->
+  <header class="max-w-7xl mx-auto w-full mb-4 flex flex-col md:flex-row justify-between items-center border-b border-slate-800 pb-3">
+    <div class="flex items-center space-x-3 mb-2 md:mb-0">
+      <div class="bg-woori-blue p-2 rounded-xl text-white">
+        <i data-lucide="sparkles" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+          InterSteller <span class="text-[10px] bg-woori-accent/20 text-woori-accent px-2 py-0.5 rounded-full font-normal">v4.5 분석 자산 연동형</span>
+        </h1>
+        <p class="text-[11px] text-slate-400">우리은행 내부 AI 행원 계좌분석 기반 펀드 완결형 프로세스 데모</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <div class="text-right hidden sm:block">
+        <p class="text-[10px] text-slate-400">발표 시연 대상자</p>
+        <p class="text-xs font-semibold text-slate-200">박영희 고객님 (62세 · 안전지향형)</p>
+      </div>
+      <button onclick="resetDemo()" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-all">
+        <i data-lucide="rotate-ccw" class="w-3 h-3"></i> 데모 초기화
+      </button>
+    </div>
+  </header>
+
+  <!-- 메인 3단 레이아웃 -->
+  <main class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch flex-grow">
+    
+    <!-- 1. 왼쪽 패널: 발표자 컨트롤러 및 흐름 가이드 -->
+    <div class="lg:col-span-3 flex flex-col space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-grow flex flex-col justify-between">
+        <div>
+          <h3 class="font-bold text-white text-sm mb-3 flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i data-lucide="navigation" class="w-4 h-4 text-woori-accent"></i> 시연 퀵 가이드 (v4.5)
+          </h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            우리은행 내부 자산 관리 인공지능이 <b>박영희 고객님의 실제 계좌 정보 및 최근 소비 데이터</b>를 기반으로 최적합한 상품 추천 명분을 설명하며, 투자 금액 입력에 맞춰 시각 정보가 가변 연동됩니다.
+          </p>
+
+          <!-- 스텝 인디케이터 목록 -->
+          <div class="space-y-2 text-xs" id="step-timeline">
+            <div class="step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105 animate-pulse" id="ind-step-1">
+              <span class="font-bold">STEP 1.</span> 웰컴 & 진단 시작하기
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-2">
+              <span class="font-bold">STEP 2.</span> 상담 방식 결정 (AI콜/자율)
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-3">
+              <span class="font-bold">STEP 3.</span> <b>[진단]</b> 3문항 성향 분석 진행
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-4">
+              <span class="font-bold">STEP 4.</span> <b>[매칭]</b> 2개 탭 상품 리스트 개설
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-5">
+              <span class="font-bold">STEP 5.</span> <b>[Q&A]</b> 금액 입력 및 AI 음성 질답
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-6">
+              <span class="font-bold">STEP 6.</span> 최종 게이트웨이 (불이익 확인)
+            </div>
+            <div class="step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300" id="ind-step-7">
+              <span class="font-bold">STEP 7.</span> 안심 가입 서명 및 해시 완결
+            </div>
+          </div>
+        </div>
+
+        <!-- 계좌 연동 가상 더미 데이터 시각화 -->
+        <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="text-amber-500 font-semibold flex items-center gap-1.5">
+            <i data-lucide="database" class="w-4 h-4"></i> 연동된 계좌 이력 (박영희)
+          </div>
+          <div class="space-y-1 text-slate-400 text-[11px]">
+            <div class="flex justify-between"><span>우리 원화 예적금 잔액:</span><span class="text-slate-200">5,200만원</span></div>
+            <div class="flex justify-between"><span>최근 의료비 긴급지출:</span><span class="text-slate-200">1,200만원</span></div>
+            <div class="flex justify-between"><span>위험 투자자산 성향:</span><span class="text-slate-200">매우 낮음</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 가운데 패널: 우리WON뱅킹 모바일 디바이스 프레임 -->
+    <div class="lg:col-span-5 flex justify-center items-center">
+      <div class="relative w-[385px] h-[780px] bg-slate-950 rounded-[48px] p-3 shadow-2xl border-4 border-slate-700 flex flex-col overflow-hidden">
+        
+        <!-- 디바이스 카메라 및 수화부 노치 -->
+        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-950 rounded-full z-50 flex items-center justify-center">
+          <div class="w-12 h-1 bg-slate-800 rounded-full"></div>
+          <div class="w-2.5 h-2.5 bg-slate-900 rounded-full ml-3"></div>
+        </div>
+
+        <!-- 모바일 액정 내부 레이아웃 -->
+        <div class="w-full h-full bg-[#F5F7FB] rounded-[38px] overflow-hidden flex flex-col relative text-slate-900">
+          
+          <!-- 상단 인앱 상태바 (Status Bar) -->
+          <div class="h-10 pt-4 px-6 flex justify-between items-center bg-white text-xs text-slate-700 font-medium select-none z-10 shrink-0">
+            <span>우리WON</span>
+            <div class="flex items-center space-x-1.5">
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <!-- WON뱅킹 전용 앱 네비게이션 헤더 -->
+          <header class="h-14 bg-white border-b border-slate-100 px-4 flex items-center justify-between z-10 shrink-0">
+            <div class="flex items-center space-x-2">
+              <div class="w-6 h-6 rounded-full bg-woori-blue flex items-center justify-center text-white text-[10px] font-bold">W</div>
+              <span class="font-extrabold text-woori-blue text-sm tracking-tight">우리WON뱅킹</span>
+            </div>
+            <div class="flex items-center space-x-3 text-slate-600">
+              <i data-lucide="bell" class="w-5 h-5 cursor-pointer"></i>
+              <i data-lucide="menu" class="w-5 h-5 cursor-pointer"></i>
+            </div>
+          </header>
+
+          <!-- 모바일 콘텐츠 뷰포트 -->
+          <div class="flex-grow overflow-y-auto no-scrollbar relative flex flex-col bg-[#F5F7FB]" id="mobile-viewport">
+            
+            <!-- [STEP 1] 펀드 가입 가이드 전용 웰컴 대시보드 (자산 연동 정보 요약) -->
+            <div id="step-1" class="mobile-step p-5 space-y-6 flex flex-col justify-between h-full">
+              <div class="space-y-4">
+                <div class="bg-gradient-to-br from-woori-blue to-woori-accent p-5 rounded-3xl text-white shadow-lg space-y-3">
+                  <span class="text-[10px] bg-white/20 px-2.5 py-1 rounded-full font-bold">자산 연동 완료</span>
+                  <h4 class="text-xl font-extrabold leading-snug tracking-tight">박영희 고객님의<br>안전한 자산 관리를 돕습니다</h4>
+                  <p class="text-xs text-white/80 leading-relaxed">
+                    우리은행 예적금 현황 및 거래 패턴을 AI가 완벽하게 교차 분석하여, 가장 알맞은 명확한 펀드 추천 이유를 제시합니다.
+                  </p>
+                </div>
+
+                <!-- 자산 진단 요약 정보 박스 -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <h5 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 border-b border-slate-50 pb-2">
+                    <i data-lucide="shield-check" class="text-woori-blue w-4 h-4"></i> 자산 및 긴급 의료비 상태
+                  </h5>
+                  <div class="grid grid-cols-2 gap-3 text-xs leading-normal">
+                    <div class="bg-slate-50 p-2.5 rounded-xl">
+                      <p class="text-slate-400 text-[10px]">우리은행 보유 예금</p>
+                      <p class="font-bold text-slate-800 mt-0.5">5,200만 원</p>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl">
+                      <p class="text-slate-400 text-[10px]">최근 긴급 지출액</p>
+                      <p class="font-bold text-rose-600 mt-0.5">1,200만 원</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 진단 시작용 대형 버튼 -->
+              <button onclick="transitionToStep('step-2')" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-sm py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all transform active:scale-95">
+                내 투자 성향 분석하고 상품 찾기 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- [STEP 2] AI 음성 상담 신청 여부 결정 모달 -->
+            <div id="step-2" class="mobile-step hidden p-5 flex flex-col justify-end h-full bg-black/40 absolute inset-0 z-20">
+              <div class="bg-white rounded-3xl p-5 shadow-2xl space-y-4 transform transition-transform duration-300">
+                <div class="flex items-center space-x-2 text-woori-blue">
+                  <div class="w-1.5 h-6 bg-woori-blue rounded-full"></div>
+                  <h3 class="font-bold text-sm">원금 손실 설명 의무 및 성향 상담</h3>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-relaxed">
+                  펀드는 예금과 달리 <b>원금 손실 위험성</b>이 높은 금융자산입니다. AI 전담 행원(김민지)이 박영희 고객님의 소중한 자산 현황을 대조 분석하여 가장 안전한 상품을 통화로 안내해 드릴게요.
+                </p>
+                <div class="bg-woori-sky p-3 rounded-xl border border-woori-blue/20 flex gap-2 items-start">
+                  <i data-lucide="phone-call" class="w-3.5 h-3.5 text-woori-blue mt-0.5 shrink-0"></i>
+                  <p class="text-[10px] text-woori-blue font-medium leading-normal">
+                    '네, 전화 받을게요'를 선택하시면 양방향 AI 성향 진단 및 맞춤 추천 상담 통화가 즉시 가동됩니다.
+                  </p>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                  <button onclick="rejectAICallAndGoSolo()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs py-3.5 rounded-xl">
+                    혼자 자율 가입하기
+                  </button>
+                  <button onclick="acceptAICallRequest()" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-xs py-3.5 rounded-xl shadow-lg">
+                    네, 전화 받을게요
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- [STEP 3] 가상 전화 수신 화면 (김민지 AI) -->
+            <div id="step-3" class="mobile-step hidden h-full w-full bg-[#111827] text-white flex flex-col justify-between p-8 z-30 absolute inset-0">
+              <div class="flex flex-col items-center mt-12 space-y-2">
+                <p class="text-woori-accent text-xs font-bold tracking-widest uppercase flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-woori-accent rounded-full animate-ping"></span> 우리은행 Call Center
+                </p>
+                <h3 class="text-xl font-bold">우리은행 AI 김민지</h3>
+                <p class="text-xs text-slate-400">02-2002-8888</p>
+              </div>
+
+              <!-- 원형 아바타 흔들림/파동 진동 영역 -->
+              <div class="flex justify-center my-auto relative">
+                <div class="absolute w-36 h-36 bg-woori-blue/10 rounded-full pulse-ring"></div>
+                <div class="w-32 h-32 rounded-full border-4 border-slate-700 overflow-hidden bg-slate-800 shake flex items-center justify-center relative">
+                  <svg class="w-20 h-20 text-slate-300" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- 전화 조작 액션 -->
+              <div class="flex justify-around items-center mb-10 w-full">
+                <div class="flex flex-col items-center">
+                  <button onclick="endCallAndBack()" class="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-transform active:scale-95 shadow-lg">
+                    <i data-lucide="phone-off" class="w-5 h-5 text-white"></i>
+                  </button>
+                  <span class="text-xs text-slate-400 mt-2">거절</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <button onclick="connectCall()" class="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center hover:bg-emerald-700 transition-transform active:scale-95 shadow-lg relative">
+                    <span class="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-25"></span>
+                    <i data-lucide="phone" class="w-5 h-5 text-white"></i>
+                  </button>
+                  <span class="text-xs text-slate-400 mt-2">받기</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- [STEP 3 - AI콜 성향 진단 진행 화면] -->
+            <div id="step-call-propensity" class="mobile-step hidden h-full w-full bg-white flex flex-col justify-between relative z-20">
+              
+              <!-- 통화 헤더 상태바 -->
+              <div class="bg-slate-900 text-white p-3 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span class="text-[10px] font-semibold text-slate-300">실시간 성향 진단 통화중 <span id="propensity-timer">00:00</span></span>
+                </div>
+                <span class="text-[9px] bg-white/20 px-2 py-0.5 rounded text-white font-medium">AI 김민지</span>
+              </div>
+
+              <!-- 스크롤 가능 콘텐츠 영역 -->
+              <div class="p-4 flex-grow overflow-y-auto no-scrollbar space-y-4">
+                
+                <!-- 자막 및 안내 -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex flex-col items-center text-center space-y-2">
+                  <div class="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-woori-blue animate-pulse"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-[11px] font-bold text-slate-800">성향 진단 세션</h5>
+                    <p class="text-[9px] text-slate-400">AI 행원의 목소리를 들으며 버튼을 선택하세요</p>
+                  </div>
+                  <div class="w-full bg-white p-3 rounded-xl border border-slate-100 text-[11px] text-slate-700 min-h-[60px] flex items-center justify-center font-medium leading-relaxed" id="ai-propensity-subtitle">
+                    질문을 준비하고 있습니다...
+                  </div>
+                </div>
+
+                <!-- [모바일 내부 인앱 성향 변화 예측 그래프] -->
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-woori-blue"></i> 나의 성향 예측 추이
+                    </span>
+                    <span id="propensity-chart-tag" class="text-[9px] bg-woori-sky text-woori-blue px-2 py-0.5 rounded-full font-bold">연산중</span>
+                  </div>
+                  <div class="w-full bg-white rounded-xl border border-slate-100 p-2.5 flex items-center justify-center min-h-[130px]">
+                    <canvas id="propensityInAppChart" class="w-full max-h-[120px]"></canvas>
+                  </div>
+                </div>
+
+                <!-- 실시간 질문 및 답변 카드 배치 구역 (여기가 전면에 활성화됨) -->
+                <div id="propensity-interactive-box" class="space-y-2.5">
+                  <!-- JS로 문항 단추와 텍스트가 노출됨 -->
+                </div>
+
+              </div>
+
+              <!-- 통화 중단 후 자율 가입 전환 대응 -->
+              <div class="p-3 bg-slate-50 border-t border-slate-100 shrink-0">
+                <button onclick="hangUpPropensityAndSwitchToSolo()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all">
+                  <i data-lucide="phone-off" class="w-4 h-4"></i> 통화 종료 후 자율 진단 전환
+                </button>
+              </div>
+            </div>
+
+            <!-- [STEP 3 - 자율 성향 진단 진행 화면] -->
+            <div id="step-solo-form" class="mobile-step hidden p-4 space-y-4">
+              <div class="bg-slate-800 text-white p-3.5 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold">혼자 자율 성향 진단 진행 중</h4>
+                  <p class="text-[10px] text-slate-300">아래 설문을 기입 후 진단 완료 버튼을 탭해 주세요.</p>
+                </div>
+                <button onclick="emergencyCallAI()" class="bg-woori-blue text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-md animate-pulse">
+                  <i data-lucide="phone" class="w-3 h-3"></i> AI 전화 요청
+                </button>
+              </div>
+
+              <!-- 인앱 성향 변화 예측 그래프 선탑재 -->
+              <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-xs font-bold text-slate-800">예측 성향 실시간 통계</span>
+                  <span id="solo-propensity-result" class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">미작성</span>
+                </div>
+                <div class="h-[120px] flex items-center justify-center">
+                  <canvas id="soloPropensityChart" class="w-full max-h-[110px]"></canvas>
+                </div>
+              </div>
+
+              <!-- 세 개 설문 폼 세션 -->
+              <form id="propensity-survey-form" class="space-y-4" onsubmit="event.preventDefault();">
+                <!-- 질문 1 -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                  <h5 class="text-xs font-bold text-slate-800">Q1. 투자 원금 손실 감내 범위</h5>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q1" value="safe" onchange="calculateSoloPropensity()" class="text-woori-blue">
+                      <span>단 1원도 손실은 불가해요 (안정형)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q1" value="mid" onchange="calculateSoloPropensity()" class="text-woori-blue" checked>
+                      <span>조금의 가치 등락은 이해해요 (중립형)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q1" value="high" onchange="calculateSoloPropensity()" class="text-woori-blue">
+                      <span>고수익을 원해서 손실도 괜찮아요 (공격형)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 질문 2 -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                  <h5 class="text-xs font-bold text-slate-800">Q2. 예상 투자 보존 기간</h5>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q2" value="short" onchange="calculateSoloPropensity()" class="text-woori-blue">
+                      <span>6개월 미만 단기 운용</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q2" value="mid" onchange="calculateSoloPropensity()" class="text-woori-blue" checked>
+                      <span>1년 이상 2년 미만 중기 운용</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q2" value="long" onchange="calculateSoloPropensity()" class="text-woori-blue">
+                      <span>3년 이상 길게 묶어둘 장기 투자</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 질문 3 -->
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                  <h5 class="text-xs font-bold text-slate-800">Q3. 금융 투자 자산 거래 경험</h5>
+                  <div class="space-y-1.5">
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q3" value="novice" onchange="calculateSoloPropensity()" class="text-woori-blue" checked>
+                      <span>거의 없음 (예적금 위주 안정 거래)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-50 hover:bg-woori-sky cursor-pointer transition-all text-xs">
+                      <input type="radio" name="solo_q3" value="exp" onchange="calculateSoloPropensity()" class="text-woori-blue">
+                      <span>조금 있음 (주식 또는 펀드 가입 이력)</span>
+                    </label>
+                  </div>
+                </div>
+              </form>
+
+              <!-- 가입 의사 단계 이동 버튼 -->
+              <button onclick="finishSoloSurveyAndGoToProducts()" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-xs py-3.5 rounded-xl shadow-lg transition-all">
+                분석 확인 및 추천 상품 보러가기
+              </button>
+            </div>
+
+
+            <!-- [STEP 4 - 2개 탭 기반 추천/전체 상품 탐색 대시보드] -->
+            <div id="step-product-selection" class="mobile-step hidden p-4 space-y-4">
+              
+              <!-- 진단 정보 알림 가이드 -->
+              <div class="bg-woori-blue/10 border border-woori-blue/20 p-3.5 rounded-2xl text-slate-800 space-y-2">
+                <div class="flex items-center space-x-2 text-woori-blue font-bold">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                  <h4 class="text-xs">투자 성향 분석 완료 및 계좌 대조</h4>
+                </div>
+                <!-- AI 추천 이유 칭찬 및 연동 명분 (피드백 반영) -->
+                <p class="text-[10px] text-slate-600 leading-relaxed" id="match-praise-text">
+                  박영희 고객님의 성향은 <b id="match-propensity-text" class="text-woori-blue">위험중립형</b>입니다.
+                </p>
+              </div>
+
+              <!-- 🌟 2개의 전용 탭 컨트롤 바 -->
+              <div class="flex bg-slate-200/60 p-1.5 rounded-xl space-x-1 shrink-0 select-none">
+                <button onclick="switchProductTab('recommend')" id="tab-recommend" class="flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all bg-white text-woori-blue shadow-sm">
+                  🎯 성향 맞춤형 추천
+                </button>
+                <button onclick="switchProductTab('all')" id="tab-all" class="flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all text-slate-600 hover:text-slate-900">
+                  🌐 모든 상품 보기 (총 4개)
+                </button>
+              </div>
+
+              <!-- 탭 1 컨텐츠: 성향에 맞는 종목 추천 상품 카드 박스 -->
+              <div id="tab-content-recommend" class="space-y-3">
+                <!-- 동적으로 맞춤형 펀드 1종만 렌더링됨 -->
+              </div>
+
+              <!-- 탭 2 컨텐츠: 모든 종목 보기 상품 리스트 박스 (피드백 반영: 4개로 대폭 확대) -->
+              <div id="tab-content-all" class="space-y-3 hidden">
+                <!-- 국공채, TDF, 자산배분, 글로벌 IT가 동시에 렌더링됨 -->
+              </div>
+
+              <div class="text-[10px] text-slate-400 text-center leading-relaxed">
+                * 상품을 선택하시면 전용 <b>AI 상세 분석실(Q&A)</b> 세션으로 연계 이관됩니다.
+              </div>
+            </div>
+
+            <!-- [STEP 5 - AI 상세 Q&A 및 금액 입력 화면] (수정됨: 투자금액 입력 칸 추가 및 실시간 변경 연동) -->
+            <div id="step-call-qna" class="mobile-step hidden h-full w-full bg-white flex flex-col justify-between relative z-20">
+              
+              <!-- Q&A 상단바 상태 -->
+              <div class="bg-slate-900 text-white p-3 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span class="text-[10px] font-semibold text-slate-300">상품 분석 통화중 <span id="qna-timer">00:00</span></span>
+                </div>
+                <span id="qna-ai-status-tag" class="text-[9px] bg-woori-accent/20 px-2 py-0.5 rounded text-woori-accent font-medium">안내사 연결</span>
+              </div>
+
+              <!-- 스크롤 가능 콘텐츠 영역 -->
+              <div class="p-4 flex-grow overflow-y-auto no-scrollbar space-y-4">
+                
+                <!-- 상품 타이틀 배너 -->
+                <div class="bg-woori-blue/5 p-3 rounded-2xl border border-woori-blue/10 flex justify-between items-center">
+                  <div>
+                    <span class="text-[9px] text-woori-blue font-bold tracking-tight">상세 상담 대상 상품</span>
+                    <h4 id="qna-product-title" class="text-xs font-bold text-slate-800">우리 단기 국공채 펀드</h4>
+                  </div>
+                  <span id="qna-product-badge" class="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-extrabold">보통위험</span>
+                </div>
+
+                <!-- 🌟 [투자금액 직접 입력 영역 추가] (피드백 반영) -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-3 space-y-2 shadow-sm">
+                  <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                    <i data-lucide="calculator" class="w-3.5 h-3.5 text-woori-blue"></i> 설계하실 투자 금액을 입력하세요
+                  </label>
+                  <div class="flex items-center space-x-2">
+                    <input type="number" id="investment-amount-input" value="1000" oninput="changeInvestmentAmount(this.value)" class="flex-grow p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-woori-blue text-right" placeholder="금액 입력">
+                    <span class="text-xs font-bold text-slate-700">만 원</span>
+                  </div>
+                  <!-- 금액 퀵 조정 단추 -->
+                  <div class="grid grid-cols-4 gap-1.5 pt-0.5">
+                    <button onclick="setQuickAmount(10)" class="py-1 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded-lg border border-slate-200 transition-all">10만</button>
+                    <button onclick="setQuickAmount(100)" class="py-1 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded-lg border border-slate-200 transition-all">100만</button>
+                    <button onclick="setQuickAmount(500)" class="py-1 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded-lg border border-slate-200 transition-all">500만</button>
+                    <button onclick="setQuickAmount(1000)" class="py-1 bg-woori-sky text-[10px] font-bold text-woori-blue rounded-lg border border-woori-blue/20 transition-all">1,000만</button>
+                  </div>
+                </div>
+
+                <!-- 김민지 AI 수신자막 안내부 -->
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 flex flex-col items-center text-center space-y-2">
+                  <div class="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-woori-blue animate-bounce"></i>
+                  </div>
+                  <div class="w-full bg-white p-3 rounded-xl border border-slate-100 text-[11px] text-slate-700 min-h-[50px] flex items-center justify-center font-medium leading-relaxed" id="ai-qna-subtitle">
+                    로딩 중...
+                  </div>
+                </div>
+
+                <!-- [모바일 내부 임베디드 시각 차트 공간 - 투자금에 연동되어 실시간 렌더링됨] -->
+                <div class="bg-slate-50 border border-slate-100 rounded-2xl p-3 space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-woori-blue"></i> 실시간 투자 분석 차트
+                    </span>
+                    <span id="in-app-qna-chart-tag" class="text-[9px] bg-woori-sky text-woori-blue px-2 py-0.5 rounded-full font-bold">비교 가능</span>
+                  </div>
+                  
+                  <div class="w-full bg-white rounded-xl border border-slate-100 p-2.5 flex items-center justify-center min-h-[160px] relative">
+                    <canvas id="qnaInAppChart" class="w-full max-h-[150px]"></canvas>
+                  </div>
+                </div>
+
+                <!-- 사용자 발화 시뮬레이션 카드 -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                  <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <i data-lucide="message-square" class="w-3 h-3 text-woori-blue"></i> 궁금한 점을 AI에게 질문해 보세요
+                  </p>
+                  <div class="grid grid-cols-2 gap-2" id="qna-user-voice-options">
+                    <!-- 현재 상품에 정합하는 디테일 질문들이 렌더링됨 -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- 통화 조작부 -->
+              <div class="p-3 bg-slate-50 border-t border-slate-100 shrink-0">
+                <button onclick="hangUpQnaAndSwitchToSolo()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all">
+                  <i data-lucide="phone-off" class="w-4 h-4"></i> 통화 종료 후 자율 분석 전환
+                </button>
+              </div>
+            </div>
+
+            <!-- [STEP 5 - 자율 자가 Q&A 상세 분석 화면] (금액 연동 실시간 탑재) -->
+            <div id="step-solo-qna" class="mobile-step hidden p-4 space-y-4">
+              <div class="bg-slate-800 text-white p-3.5 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold" id="solo-qna-prod-title">우리 단기 국공채 펀드</h4>
+                  <p class="text-[10px] text-slate-300">궁금한 분석 질문을 탭하여 셀프 조회를 수행하세요.</p>
+                </div>
+                <button onclick="emergencyCallAIFromSolo()" class="bg-woori-blue text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-md animate-pulse">
+                  <i data-lucide="phone" class="w-3 h-3"></i> AI 전화 요청
+                </button>
+              </div>
+
+              <!-- 자율가입 시에도 투자금액 조절기 노출 -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-3 space-y-2 shadow-sm">
+                <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                  <i data-lucide="coins" class="w-3.5 h-3.5 text-woori-blue"></i> 가입 원금 설계 금액 변경
+                </label>
+                <div class="flex items-center space-x-2">
+                  <input type="number" id="investment-amount-input-solo" value="1000" oninput="changeInvestmentAmount(this.value)" class="flex-grow p-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-woori-blue text-right">
+                  <span class="text-xs font-bold text-slate-700">만 원</span>
+                </div>
+              </div>
+
+              <!-- 인앱 단일 동적 차트 통합부 (자율) -->
+              <div class="bg-white border border-slate-200 rounded-2xl p-3 space-y-2">
+                <div class="flex justify-between items-center border-b border-slate-50 pb-1.5">
+                  <span id="solo-qna-chart-title" class="text-xs font-extrabold text-slate-800">원금 변동 손실 시뮬레이션</span>
+                  <span id="solo-qna-chart-tag" class="text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded font-bold">주기형 변동</span>
+                </div>
+                <div class="h-[150px] flex items-center justify-center">
+                  <canvas id="soloQnaChart" class="w-full max-h-[140px]"></canvas>
+                </div>
+              </div>
+
+              <!-- 대형 자율 분석 질문 팩 -->
+              <div class="space-y-2">
+                <button onclick="renderSoloQnaGraph('loss')" class="w-full bg-white border border-slate-200 hover:border-woori-blue p-3 rounded-xl text-left flex items-center justify-between text-xs font-bold text-slate-800 transition-all">
+                  <span>📉 입력 원금 대비 예상 변동 손실폭은?</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </button>
+                <button onclick="renderSoloQnaGraph('fee')" class="w-full bg-white border border-slate-200 hover:border-woori-blue p-3 rounded-xl text-left flex items-center justify-between text-xs font-bold text-slate-800 transition-all">
+                  <span>💸 이 금액 가입 시 누적 수수료 보수는?</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </button>
+                <button onclick="renderSoloQnaGraph('timeline')" class="w-full bg-white border border-slate-200 hover:border-woori-blue p-3 rounded-xl text-left flex items-center justify-between text-xs font-bold text-slate-800 transition-all">
+                  <span>📅 급전이 필요한 해지 신청 시 환매 일정은?</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="transitionToStep('step-product-selection')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs py-3 rounded-xl">
+                  다른 상품 보기
+                </button>
+                <button onclick="goGatewayDirectly()" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-xs py-3 rounded-xl shadow-md">
+                  설명 이해 완료, 가입하기
+                </button>
+              </div>
+            </div>
+
+            <!-- [STEP 6] 최종 게이트웨이 화면 (불이익 및 거부 확인) -->
+            <div id="step-gateway" class="mobile-step hidden p-4 space-y-4">
+              <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-slate-800">
+                <div class="flex items-center space-x-2 text-rose-700 font-bold mb-1.5">
+                  <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                  <h4 class="text-sm">가입 전 리스크 의무 고지 (게이트웨이)</h4>
+                </div>
+                <!-- 고객 최근 자금 흐름 연동 리스크 재강조 -->
+                <p class="text-xs text-rose-700 leading-relaxed font-semibold" id="gateway-personal-warn">
+                  박영희 고객님, 최근 의료비 지출로 긴급 환금 수령을 원하실 수 있으나 본 펀드는 환매에 최소 2영업일이 지연 소요됩니다. 정말로 가입을 계속 속행하시겠습니까?
+                </p>
+              </div>
+
+              <!-- 불이익 핵심 카드 리스트 -->
+              <div class="space-y-2.5">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-800">원금 전액 비보존 대상</h5>
+                    <p class="text-[10px] text-slate-500 mt-0.5" id="gw-loss-text">시장 환경 악화 시 납입 자산 전체 손실이 도래할 수 있으며 귀속 책임은 전적으로 고객에게 있습니다.</p>
+                  </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-800">수익 무관 누적 수수료 차감</h5>
+                    <p class="text-[10px] text-slate-500 mt-0.5" id="gw-fee-text">수익률 추이가 마이너스를 기록하더라도 매년 일정한 비율의 보수 수수료 비용이 누적 수취됩니다.</p>
+                  </div>
+                </div>
+
+                <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-800">중도 환매 타임라인 존재</h5>
+                    <p class="text-[10px] text-slate-500 mt-0.5">긴급한 가계 자금 확보를 목적으로 현금 가치 교환 청구 시 최소 D+2 영업일 이후 계좌 실물 지급됩니다.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 items-start">
+                <i data-lucide="help-circle" class="w-4 h-4 text-amber-600 mt-0.5 shrink-0"></i>
+                <p class="text-[11px] text-amber-800 font-medium leading-normal">
+                  "모든 규제 및 계약 단점을 확인했습니다. 정말로 이 펀드 가입을 강행하시겠습니까?"
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 pt-2">
+                <button onclick="rejectFinalGateway()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs py-3.5 rounded-xl">
+                  잠시 보류할래요
+                </button>
+                <button onclick="approveFinalGateway()" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-xs py-3.5 rounded-xl shadow-lg">
+                  네, 완벽히 이해했어요
+                </button>
+              </div>
+            </div>
+
+            <!-- [STEP 7] 자필 서명 및 최종 완료 페이지 -->
+            <div id="step-signature" class="mobile-step hidden p-4 space-y-4 flex flex-col justify-between h-full">
+              <div class="space-y-3">
+                <div class="flex items-center space-x-2 text-woori-blue font-bold">
+                  <i data-lucide="signature" class="w-5 h-5"></i>
+                  <h4 class="text-sm">계약 체결을 위한 전자 서명</h4>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                  위 서명 패드 영역에 손가락 또는 마우스로 자필 서명을 입력하시면 최종 완료됩니다. (의무 고지 이력 및 대면 자격 검증 해시 원장 탑재)
+                </p>
+
+                <!-- 서명 캔버스 영역 -->
+                <div class="flex flex-col items-center">
+                  <canvas id="sig-canvas" width="310" height="150" class="rounded-2xl shadow-inner"></canvas>
+                  <button onclick="clearSigCanvas()" class="text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1 mt-1.5 self-end">
+                    <i data-lucide="eraser" class="w-3.5 h-3.5"></i> 서명 다시 쓰기
+                  </button>
+                </div>
+              </div>
+
+              <button onclick="finishAllDemoProcess()" class="w-full bg-woori-blue hover:bg-woori-dark text-white font-bold text-xs py-3.5 rounded-xl shadow-lg mt-4">
+                서명 완료 및 전송
+              </button>
+            </div>
+
+            <!-- 최종 가입 성공 스플래시 화면 -->
+            <div id="step-success" class="mobile-step hidden h-full w-full bg-white flex flex-col justify-center items-center p-8 text-center z-40 absolute inset-0">
+              <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-inner animate-bounce">
+                <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-800">펀드 계약이 체결되었습니다</h3>
+              <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                박영희 고객님, AI 행원 동행 또는 안전 가이드 규제 조항을 완벽 준수하여 안심 계약 체결을 이수하셨습니다.
+              </p>
+              <div class="w-full mt-6 bg-slate-50 border border-slate-100 p-4 rounded-2xl text-left space-y-2">
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">최종 가입 펀드</span>
+                  <span id="success-fund-title" class="font-bold text-woori-blue">우리 단기 국공채 펀드</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">최종 납입액</span>
+                  <span class="font-bold text-slate-700" id="success-fund-amount">1,000만 원</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">안전 가이드 상태</span>
+                  <span class="font-semibold text-emerald-600">준수 완료 (이상 무)</span>
+                </div>
+                <div class="flex justify-between text-[11px]">
+                  <span class="text-slate-400">위험 고지 암호해시</span>
+                  <span class="font-mono text-woori-blue">0x7ffc...920b</span>
+                </div>
+              </div>
+              <button onclick="resetDemo()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-3 rounded-xl mt-6">
+                메인으로 이동
+              </button>
+            </div>
+
+          </div>
+
+          <!-- 하단 네비게이션 가상 물리 버튼 바 -->
+          <footer class="h-12 bg-white border-t border-slate-100 flex justify-around items-center text-slate-400 shrink-0">
+            <i data-lucide="home" class="w-5 h-5 cursor-pointer text-woori-blue"></i>
+            <i data-lucide="search" class="w-5 h-5 cursor-pointer"></i>
+            <i data-lucide="grid" class="w-5 h-5 cursor-pointer"></i>
+            <i data-lucide="user" class="w-5 h-5 cursor-pointer"></i>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 오른쪽 패널: Audit Log 및 시스템 제어판 -->
+    <div class="lg:col-span-4 flex flex-col space-y-4">
+      
+      <!-- 시스템 제어 설명판 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-3">
+        <h3 class="font-bold text-white text-sm flex items-center gap-2 border-b border-slate-800 pb-2">
+          <i data-lucide="terminal" class="w-4 h-4 text-woori-accent"></i> 통합 모니터링 시스템
+        </h3>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          고객의 실시간 의무 정보 이해 및 상담 이력 데이터가 추적되며, 이 과정은 내부통제 장부에 영구 기록됩니다.
+        </p>
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-400">AI 상담 상태:</span>
+            <span class="text-emerald-400 font-semibold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span> 원격 감시 작동
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">설계 투자 금액:</span>
+            <span id="monitor-investment-amount" class="text-amber-400 font-bold">1,000 만원</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">분석된 성향 결과:</span>
+            <span id="monitor-propensity-result" class="text-amber-500 font-bold">진단 대기</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">가입 최종 후보 상품:</span>
+            <span id="monitor-fund-type" class="text-woori-accent font-semibold">미정</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Log 로그 패널 -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col flex-grow min-h-[300px]">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-2 mb-2">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> EU AI Act 준수 로그 증적
+          </h3>
+          <button onclick="clearAuditLogs()" class="text-[10px] text-slate-500 hover:text-slate-300">로그삭제</button>
+        </div>
+        <div class="flex-grow overflow-y-auto no-scrollbar font-mono text-[10px] space-y-1.5 bg-slate-950 p-3 rounded-xl border border-slate-800 text-emerald-400 max-h-[360px]" id="audit-log-box">
+          <div class="text-slate-500">[SYSTEM] 시스템 대기 중...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 가상 전화 벨소리 수신용 효과음 및 TTS 재생 매핑 유틸 -->
+  <audio id="virtual-ringtone" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-84.wav" loop></audio>
+
+  <!-- JS 시나리오 데이터 스튜디오 -->
+  <script>
+    // 상태값 관리자
+    let isAIRoute = true; 
+    let userPropensity = '위험중립형'; 
+    let selectedFundName = '우리 단기 국공채 펀드'; 
+    let selectedFundRisk = '보통 위험 (3등급)';
+    let currentInvestmentAmount = 1000; // 가입 기본금액 만원단위 (1,000만원)
+    
+    // 차트 인스턴스 저장
+    let propensityInAppInstance = null;
+    let soloPropensityInstance = null;
+    let qnaInAppInstance = null;
+    let soloQnaInstance = null;
+
+    // 타이머 관리자
+    let propensityTimerInterval = null;
+    let propensityTimerSec = 0;
+    let qnaTimerInterval = null;
+    let qnaTimerSec = 0;
+
+    // 상품 리스트 4종 전격 정보화 (피드백 반영)
+    const PRODUCTS_DB = {
+      bond: {
+        id: "bond",
+        name: "우리 단기 국공채 펀드",
+        desc: "국유은행 및 대한민국 정부 보장 최고안전 우량 채권 중심 자산 방어",
+        yield: "연 3.8% 기대",
+        risk: "보통 위험 (3등급)",
+        badge: "안정성 최우수",
+        praise: "고객님의 전체 보유 자산 5,200만 원 중 90% 이상이 예금 형태이고 최근 의료비 긴급 지출이 관측되어, 자산의 훼손 없이 연 3.8%대 안정성과 빠른 유동성 회수가 가능한 '단기 국공채형'이 최적의 수문장 역할을 수행합니다."
+      },
+      tdf: {
+        id: "tdf",
+        name: "우리 실버 연금 타겟데이트 펀드 (TDF)",
+        desc: "박영희 고객님 연령에 최적화된 은퇴 자산 배분 및 인플레이션 방어형 펀드",
+        yield: "연 6.2% 기대",
+        risk: "중위험 중수익 (2등급)",
+        badge: "노후 연금형",
+        praise: "향후 연금 흐름 확보를 준비하셔야 하는 62세 박영희 고객님의 목적에 꼭 맞추어, 안정 자산인 우량 채권 비율과 노후 성장에 기여할 핵심 우량주 비중을 스마트하게 자동 조정하여 안정성과 중수익을 완벽하게 절충합니다."
+      },
+      esg: {
+        id: "esg",
+        name: "우리 ESG 안심 자산배분 펀드",
+        desc: "친환경 및 상생 가치 우량주와 글로벌 국공채를 5:5로 믹싱한 웰밸런스형 자산 모델",
+        yield: "연 4.5% 기대",
+        risk: "합리적 위험 (4등급)",
+        badge: "착한 자산배분",
+        praise: "한 분야에 치우친 변동성 손실을 원천 기피하는 고객님의 중립 성향에 딱 맞춰, 글로벌 친환경 ESG 기업 채권 및 대형주를 정합 비율로 안심 배분하여 변동 충격을 현저히 완충하고 시장 평탄형 수익을 달성해 냅니다."
+      },
+      stock: {
+        id: "stock",
+        name: "우리 글로벌 IT 주식형 펀드",
+        desc: "글로벌 테크 대형 혁신 성장주 집중 분산 투자 상품",
+        yield: "연 12.4% 기대",
+        risk: "매우 높은 위험 (1등급)",
+        badge: "고수익 지향",
+        praise: "여유 자산 중 일부의 높은 자산 성장 탄력을 겨냥하여 고성장 하이테크 테마주를 정합하는 상품입니다. 단, 1등급 매우 높은 위험 상품이므로 시장 상황에 따라 입력 원금 변동에 따른 큰 폭의 하락 충격이 발생할 수 있으니 극도의 유의를 요합니다."
+      }
+    };
+
+    // 🌟 AI 음성 성향 진단 시나리오 데이터 (전화 연결 즉시 활성화됨)
+    const PROPENSITY_SCENES = {
+      q1: {
+        text: "안녕하세요, 박영희 고객님! 우리은행 AI 전담 안내사 김민지입니다. 펀드 가입 전에 안전을 진단하는 간단한 성향 질문 세 문항을 시작할게요. 첫 번째 질문입니다. 원금에 손실이 생기더라도 수익률만 높게 나오면 이를 참고 투자하실 수 있으십니까?",
+        data: [33, 33, 34],
+        choices: [
+          { text: "단 1원도 손실은 불가해요", value: "safe", next: "q2_safe" },
+          { text: "조금의 등락은 감내할 수 있어요", value: "mid", next: "q2_mid" },
+          { text: "높은 수익을 원해서 다 괜찮아요", value: "high", next: "q2_high" }
+        ]
+      },
+      q2_safe: {
+        text: "원금 안전 의향이 무척 굳건하십니다. 두 번째 질문입니다. 이 자금을 우리은행 펀드에 유지하여 보존하실 기간은 어느 정도이십니까?",
+        data: [70, 30, 0],
+        choices: [
+          { text: "6개월 이내 단기 회수 필요", value: "safe_short", next: "q3_final_safe" },
+          { text: "1년 이상 2년 가량 유지", value: "safe_mid", next: "q3_final_mid" }
+        ]
+      },
+      q2_mid: {
+        text: "일정 수준의 가격 등락은 수용해 주셨습니다. 두 번째 질문입니다. 이 자금을 우리은행 펀드에 유지하여 보존하실 기간은 어느 정도이십니까?",
+        data: [30, 60, 10],
+        choices: [
+          { text: "1년 이상 2년 가량 유지", value: "mid_mid", next: "q3_final_mid" },
+          { text: "3년 이상 지속 운용", value: "mid_long", next: "q3_final_high" }
+        ]
+      },
+      q2_high: {
+        text: "상당히 적극적인 투자 목표를 지향하십니다. 두 번째 질문입니다. 이 자금을 우리은행 펀드에 유지하여 보존하실 기간은 어느 정도이십니까?",
+        data: [10, 20, 70],
+        choices: [
+          { text: "1년 이상 2년 가량 유지", value: "high_mid", next: "q3_final_mid" },
+          { text: "3년 이상 지속 운용", value: "high_long", next: "q3_final_high" }
+        ]
+      },
+      q3_final_safe: {
+        text: "마지막 질문입니다. 금융 상품 투자에 관한 박영희 고객님의 실질적인 거래 경험은 어느 정도이십니까?",
+        data: [90, 10, 0],
+        choices: [
+          { text: "예금 외 주식 펀드 거래 무경험", value: "done_safe", next: "calc_result_safe" },
+          { text: "채권이나 펀드 거래 소폭 존재", value: "done_mid", next: "calc_result_mid" }
+        ]
+      },
+      q3_final_mid: {
+        text: "마지막 질문입니다. 금융 상품 투자에 관한 박영희 고객님의 실질적인 거래 경험은 어느 정도이십니까?",
+        data: [30, 65, 5],
+        choices: [
+          { text: "예금 외 주식 펀드 거래 무경험", value: "done_mid", next: "calc_result_mid" },
+          { text: "채권이나 펀드 거래 소폭 존재", value: "done_high", next: "calc_result_mid" }
+        ]
+      },
+      q3_final_high: {
+        text: "마지막 질문입니다. 금융 상품 투자에 관한 박영희 고객님의 실질적인 거래 경험은 어느 정도이십니까?",
+        data: [5, 15, 80],
+        choices: [
+          { text: "채권이나 펀드 거래 소폭 존재", value: "done_high_mid", next: "calc_result_mid" },
+          { text: "해외 주식 파생 상품 정기적 투자", value: "done_high_high", next: "calc_result_high" }
+        ]
+      },
+
+      // 진단 연산 완료 시퀀스
+      calc_result_safe: {
+        text: "모든 설문 분석이 정상 종료되었습니다. 박영희 고객님은 아주 안전한 투자를 선호하는 '초안정형' 투자자로 확인되었습니다. 이제 고객님의 자산과 최근 긴급 의료비 지출 이력을 연동한 최적의 펀드 분석방으로 이관하겠습니다.",
+        data: [95, 5, 0],
+        choices: [
+          { text: "펀드 매칭 대시보드로 이동", value: "goto_selection", next: "trigger_selection_safe" }
+        ]
+      },
+      calc_result_mid: {
+        text: "모든 설문 분석이 정상 종료되었습니다. 고객님은 합리적인 등락을 보수하는 '위험중립형' 투자자로 분류되었습니다. 이제 예금 포트폴리오 비중을 감안한 2개 탭 추천 대시보드로 이동해 드릴게요.",
+        data: [20, 75, 5],
+        choices: [
+          { text: "펀드 매칭 대시보드로 이동", value: "goto_selection", next: "trigger_selection_mid" }
+        ]
+      },
+      calc_result_high: {
+        text: "모든 설문 분석이 정상 종료되었습니다. 고객님은 변동을 기꺼이 이겨내는 '적극투자형' 투자자로 진단되었습니다. 이에 맞는 공격 가치형 TDF와 고성장 IT 펀드 매칭 보드로 이동하겠습니다.",
+        data: [5, 15, 80],
+        choices: [
+          { text: "펀드 매칭 대시보드로 이동", value: "goto_selection", next: "trigger_selection_high" }
+        ]
+      }
+    };
+
+    // 🌟 AI 펀드 상세 분석(Q&A) 세션 데이터
+    const QNA_SCENES = {
+      greeting: {
+        text: "선택하신 상품에 대한 안심 정밀 Q&A 안내방이 개설되었습니다. 설계하신 투자 금액 기준으로 계산된 구체적인 원금 손실 우려나 차감 비용, 대기 영업일에 대해 가청 답변을 제공합니다. 질문을 선택해 보세요.",
+        chartType: "loss",
+        choices: [
+          { text: "📉 설계 원금 대비 예상 손실액은?", next: "loss_detail" },
+          { text: "💸 매년 소진될 구체적 수수료액은?", next: "fee_detail" },
+          { text: "📅 해지 시 통장 입금 일정은?", next: "timeline_detail" },
+          { text: "단점과 불이익을 파악했으니 가입", next: "finish_qna_session" }
+        ]
+      },
+      loss_detail: {
+        text: "원금 손실 구조 안내입니다. 현재 설정 금액 기준의 인앱 그래프를 보십시오. 만약 글로벌 거시 충격 또는 시장 금리 급등 등의 위기가 지속될 경우, 설계 금액 대비 최대 10% 내외의 가치 하락에 직면하여 원금 유실이 발생할 수 있습니다. 예금자 보호는 절대 불가합니다.",
+        chartType: "loss",
+        choices: [
+          { text: "💸 매년 소진될 구체적 수수료액은?", next: "fee_detail" },
+          { text: "📅 해지 시 통장 입금 일정은?", next: "timeline_detail" },
+          { text: "위험성을 충분히 이해했으니 가입", next: "finish_qna_session" }
+        ]
+      },
+      fee_detail: {
+        text: "수수료 조항 고지입니다. 설정하신 가입금액 대비 운용 비율을 적용해 보면, 수익이 나지 않더라도 매해 누적 보수로 일정 금액이 강제 선취됩니다. 우측 누적 차트에 표시된 바와 같이 5년차 누적 시 꽤 비중 있는 고정비가 원금에서 전격 차감됩니다.",
+        chartType: "fee",
+        choices: [
+          { text: "📉 설계 원금 대비 예상 손실액은?", next: "loss_detail" },
+          { text: "📅 해지 시 통장 입금 일정은?", next: "timeline_detail" },
+          { text: "위험성을 충분히 이해했으니 가입", next: "finish_qna_session" }
+        ]
+      },
+      timeline_detail: {
+        text: "환매 지연 일정 고지입니다. 인앱 타임라인 바를 참조해 주세요. 최근 의료비 긴급 출금 이력이 관찰되시는데, 본 펀드를 해지 요청하셔도 수시입금처럼 즉시 송금되지 않고 정산 단계를 밟아 반드시 D+2 영업일 이후에나 계좌에 입금됨을 다시 한번 알려드립니다.",
+        chartType: "timeline",
+        choices: [
+          { text: "📉 설계 원금 대비 예상 손실액은?", next: "loss_detail" },
+          { text: "💸 매년 소진될 구체적 수수료액은?", next: "fee_detail" },
+          { text: "위험성을 충분히 이해했으니 가입", next: "finish_qna_session" }
+        ]
+      }
+    };
+
+
+    // 01. 인앱 차트 공용 렌더링 엔진 (금액 가변 동적 배율 연동 적용)
+    function renderPropensityInAppChart(data) {
+      const ctx = document.getElementById('propensityInAppChart');
+      if (!ctx) return;
+      if (propensityInAppInstance) propensityInAppInstance.destroy();
+
+      propensityInAppInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['안정형', '위험중립형', '공격형'],
+          datasets: [{
+            data: data,
+            backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 10 } } } }
+        }
+      });
+    }
+
+    function renderQnaInAppChart(type) {
+      const ctx = document.getElementById('qnaInAppChart');
+      if (!ctx) return;
+      if (qnaInAppInstance) qnaInAppInstance.destroy();
+
+      // 투자금액 대비 배율 산정 (기본 1000만원 기준 배율)
+      const ratio = currentInvestmentAmount / 1000;
+
+      let config = {};
+      if (type === 'loss') {
+        const principal = currentInvestmentAmount;
+        config = {
+          type: 'line',
+          data: {
+            labels: ['0m', '6m', '12m', '18m', '24m', '36m'],
+            datasets: [
+              { label: '성장 기대치(만원)', data: [principal, principal * 1.03, principal * 1.06, principal * 1.09, principal * 1.12, principal * 1.18].map(Math.round), borderColor: '#10B981', tension: 0.2 },
+              { label: '시장 충격치(만원)', data: [principal, principal * 0.95, principal * 0.88, principal * 0.85, principal * 0.90, principal * 0.93].map(Math.round), borderColor: '#EF4444', tension: 0.2 }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+        };
+      } else if (type === 'fee') {
+        const baseFees = [120000, 240000, 360000, 480000, 600000];
+        const scaledFees = baseFees.map(f => Math.round((f * ratio) / 10000)); // 만원 단위로 절상
+        config = {
+          type: 'bar',
+          data: {
+            labels: ['1년차', '2년차', '3년차', '4년차', '5년차'],
+            datasets: [{
+              label: '누적 수수료(만원)',
+              data: scaledFees,
+              backgroundColor: '#0046AD',
+              borderRadius: 4
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+        };
+      } else if (type === 'timeline') {
+        config = {
+          type: 'bar',
+          data: {
+            labels: ['해약청구', '심사정산', '자금입금'],
+            datasets: [{
+              data: [0.1, 1.2, 2.8],
+              backgroundColor: ['#64748B', '#F59E0B', '#10B981'],
+              borderRadius: 4
+            }]
+          },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 3 } } }
+        };
+      }
+
+      qnaInAppInstance = new Chart(ctx, config);
+    }
+
+    // 02. 자율 진단용 성향 실시간 차트
+    function renderSoloPropensityChart(data) {
+      const ctx = document.getElementById('soloPropensityChart');
+      if (!ctx) return;
+      if (soloPropensityInstance) soloPropensityInstance.destroy();
+
+      soloPropensityInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['안정형', '위험중립', '공격형'],
+          datasets: [{
+            data: data,
+            backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 8, font: { size: 9 } } } }
+        }
+      });
+    }
+
+    // 03. 자율 탐색용 단일 동적 Q&A 그래프 전환기 (금액가변 적용)
+    function renderSoloQnaChart(type) {
+      const ctx = document.getElementById('soloQnaChart');
+      if (!ctx) return;
+      if (soloQnaInstance) soloQnaInstance.destroy();
+
+      let config = {};
+      const titleEl = document.getElementById('solo-qna-chart-title');
+      const tagEl = document.getElementById('solo-qna-chart-tag');
+      const ratio = currentInvestmentAmount / 1000;
+
+      if (type === 'loss') {
+        titleEl.innerText = "원금 변동 손실 시뮬레이션";
+        tagEl.innerText = "시장 위기 위험";
+        tagEl.className = "text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded font-bold";
+        const principal = currentInvestmentAmount;
+        config = {
+          type: 'line',
+          data: {
+            labels: ['0m', '6m', '12m', '18m', '24m', '36m'],
+            datasets: [
+              { label: '기대 수익(만원)', data: [principal, principal * 1.03, principal * 1.06, principal * 1.09, principal * 1.12, principal * 1.18].map(Math.round), borderColor: '#10B981', tension: 0.2 },
+              { label: '위기 손실(만원)', data: [principal, principal * 0.95, principal * 0.88, principal * 0.85, principal * 0.90, principal * 0.93].map(Math.round), borderColor: '#EF4444', tension: 0.2 }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+        };
+      } else if (type === 'fee') {
+        titleEl.innerText = "5개년 누적 수수료 보수";
+        tagEl.innerText = "운용 비용 부과";
+        tagEl.className = "text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold";
+        const baseFees = [120000, 240000, 360000, 480000, 600000];
+        const scaledFees = baseFees.map(f => Math.round((f * ratio) / 10000));
+        config = {
+          type: 'bar',
+          data: {
+            labels: ['1년차', '2년차', '3년차', '4년차', '5년차'],
+            datasets: [{
+              label: '누적 수수료(만원)',
+              data: scaledFees,
+              backgroundColor: '#0046AD',
+              borderRadius: 4
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+        };
+      } else if (type === 'timeline') {
+        titleEl.innerText = "영업일 기준 환매 대기 일정";
+        tagEl.innerText = "중도 청구 대기";
+        tagEl.className = "text-[9px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded font-bold";
+        config = {
+          type: 'bar',
+          data: {
+            labels: ['청구', '심사', '수령'],
+            datasets: [{
+              data: [0.1, 1.2, 2.8],
+              backgroundColor: ['#64748B', '#F59E0B', '#10B981'],
+              borderRadius: 4
+            }]
+          },
+          options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max: 3 } } }
+        };
+      }
+
+      soloQnaInstance = new Chart(ctx, config);
+    }
+
+    // 04. 한국어 음성합성엔진(Web Speech API) 재생 래퍼
+    function speakAI(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ko-KR';
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.lang.includes('KO') || v.name.includes('Yuri') || v.name.includes('Google 한국어'));
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        console.warn("이 브라우저는 음성 합성을 지원하지 않습니다.");
+      }
+    }
+
+    // 05. UI 화면 흐름 매니징
+    function transitionToStep(targetId) {
+      document.querySelectorAll('.mobile-step').forEach(step => step.classList.add('hidden'));
+      document.querySelectorAll('.step-indicator').forEach(ind => {
+        ind.className = "step-indicator p-2.5 rounded-xl bg-slate-800/50 text-slate-500 transition-all duration-300";
+      });
+
+      document.getElementById('mobile-viewport').scrollTop = 0;
+
+      if (targetId === 'step-1') {
+        document.getElementById('step-1').classList.remove('hidden');
+        document.getElementById('ind-step-1').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105 animate-pulse";
+        writeAuditLog("USER", "박영희 고객이 웰컴 대시보드에서 진입 준비를 개시합니다.");
+      } else if (targetId === 'step-2') {
+        document.getElementById('step-2').classList.remove('hidden');
+        document.getElementById('step-1').classList.remove('hidden'); 
+        document.getElementById('ind-step-2').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        writeAuditLog("SYSTEM", "AI 동행 안내 수락을 위한 의사 파악 모달을 전송했습니다.");
+      } else if (targetId === 'step-3') {
+        document.getElementById('step-3').classList.remove('hidden');
+        document.getElementById('ind-step-3').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        playRingtone(true);
+        writeAuditLog("SYSTEM", "고객 전용 원격 콜 게이트웨이(02-2002-8888)를 호출하였습니다.");
+      } else if (targetId === 'call-propensity') {
+        document.getElementById('step-call-propensity').classList.remove('hidden');
+        document.getElementById('ind-step-3').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        runPropensityAI('q1');
+        startPropensityTimer();
+      } else if (targetId === 'solo-form') {
+        document.getElementById('step-solo-form').classList.remove('hidden');
+        document.getElementById('ind-step-3').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        calculateSoloPropensity();
+        writeAuditLog("USER", "고객이 음성 연결을 배제하고 자율 성향 진단(3단 설문)을 개시합니다.");
+      } else if (targetId === 'step-product-selection') {
+        document.getElementById('step-product-selection').classList.remove('hidden');
+        document.getElementById('ind-step-4').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        
+        document.getElementById('match-propensity-text').innerText = userPropensity;
+        document.getElementById('monitor-propensity-result').innerText = userPropensity;
+        
+        // 성향 매칭 칭찬 멘트 동적 생성 (피드백 반영)
+        let matchingPraise = "";
+        if (userPropensity === '초안정형') {
+          matchingPraise = `박영희 고객님은 극도의 원금 안정을 선호하시는 <b class="text-emerald-600">초안정형</b> 성향이십니다. ${PRODUCTS_DB.bond.praise}`;
+        } else if (userPropensity === '적극투자형') {
+          matchingPraise = `박영희 고객님은 과감한 연 10% 이상 수익 탄력을 선호하시는 <b class="text-rose-600">적극투자형</b> 성향이십니다. ${PRODUCTS_DB.stock.praise}`;
+        } else {
+          // 위험중립형
+          matchingPraise = `박영희 고객님은 안전을 기틀로 완충 성장을 추구하시는 <b class="text-amber-500">위험중립형</b> 성향이십니다. ${PRODUCTS_DB.esg.praise}`;
+        }
+        document.getElementById('match-praise-text').innerHTML = matchingPraise;
+
+        renderProductTabs(); 
+        writeAuditLog("SYSTEM", "진단 및 계좌 분석 정보를 참조하여 개인화된 2개 탭 포트폴리오(추천/전체)를 개설했습니다.");
+      } else if (targetId === 'call-qna') {
+        document.getElementById('step-call-qna').classList.remove('hidden');
+        document.getElementById('ind-step-5').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        
+        document.getElementById('qna-product-title').innerText = selectedFundName;
+        document.getElementById('qna-product-badge').innerText = selectedFundRisk;
+        if (selectedFundName.includes('IT')) {
+          document.getElementById('qna-product-badge').className = "text-[9px] bg-red-50 text-red-600 px-2 py-0.5 rounded font-extrabold";
+        } else if (selectedFundName.includes('TDF')) {
+          document.getElementById('qna-product-badge').className = "text-[9px] bg-amber-50 text-amber-500 px-2 py-0.5 rounded font-extrabold";
+        } else {
+          document.getElementById('qna-product-badge').className = "text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-extrabold";
+        }
+
+        runQnaAI('greeting');
+        startQnaTimer();
+      } else if (targetId === 'solo-qna') {
+        document.getElementById('step-solo-qna').classList.remove('hidden');
+        document.getElementById('ind-step-5').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        document.getElementById('solo-qna-prod-title').innerText = selectedFundName;
+        renderSoloQnaChart('loss');
+        writeAuditLog("USER", "전화 없이 자율 상세 펀드 구조 해부학 Q&A를 개시합니다.");
+      } else if (targetId === 'gateway') {
+        document.getElementById('step-gateway').classList.remove('hidden');
+        document.getElementById('ind-step-6').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        
+        // 최종 게이트웨이에 구체적 금액 대조 기입 (피드백 반영)
+        const totalFeeEst = Math.round((600000 * (currentInvestmentAmount / 1000)) / 10000);
+        const maxLossEst = Math.round(currentInvestmentAmount * 0.1);
+        
+        document.getElementById('gw-loss-text').innerHTML = `최대 위기 시장 충격 도래 시, 설계하신 원금 ${currentInvestmentAmount}만 원 중 <b class="text-rose-600">약 ${maxLossEst}만 원 수준의 전격 손실</b>이 관측될 수 있습니다.`;
+        document.getElementById('gw-fee-text').innerHTML = `수수료 보수율에 따라 가입 원금 내에서 매년 차감되어 <b>5년 누적 시 약 ${totalFeeEst}만 원의 고정비</b>가 빠져나가 누적 원금을 훼손시킵니다.`;
+        
+        speakAI("가입 최종 위험성 조항입니다. 펀드는 원금 전액 손실이 우려되며 수익률과 무관한 운용 수수료가 매해 차감되고, 환매 청구 시 즉시 입금되지 않습니다. 모두 동의하고 가입하시겠습니까?");
+        writeAuditLog("COMPLIANCE", "최종 리스크 재고지 준법감시 게이트웨이 관문에 강제 진입했습니다.");
+      } else if (targetId === 'signature') {
+        document.getElementById('step-signature').classList.remove('hidden');
+        document.getElementById('ind-step-7').className = "step-indicator p-2.5 rounded-xl bg-woori-blue/20 border border-woori-blue text-woori-accent font-bold scale-105";
+        initSignaturePad();
+        writeAuditLog("USER", "고객의 계약 법적 동의 확인을 위한 수기 서명 자격창을 호출합니다.");
+      }
+      lucide.createIcons();
+    }
+
+    // 🌟 투자 금액 변경 시 실시간 반영 로직 (피드백 반영)
+    function changeInvestmentAmount(val) {
+      const parsed = parseInt(val);
+      if (isNaN(parsed) || parsed <= 0) {
+        currentInvestmentAmount = 1;
+      } else {
+        currentInvestmentAmount = parsed;
+      }
+      
+      // 금액 상태 텍스트 모니터 패널 싱크
+      document.getElementById('monitor-investment-amount').innerText = `${currentInvestmentAmount.toLocaleString()} 만원`;
+      document.getElementById('success-fund-amount').innerText = `${currentInvestmentAmount.toLocaleString()} 만원`;
+      
+      // 모바일 인풋 동시 동기화
+      const inputInApp = document.getElementById('investment-amount-input');
+      const inputSolo = document.getElementById('investment-amount-input-solo');
+      if (inputInApp) inputInApp.value = currentInvestmentAmount;
+      if (inputSolo) inputSolo.value = currentInvestmentAmount;
+
+      // 활성화된 인앱 Q&A 차트 실시간 갱신
+      if (qnaInAppInstance) {
+        const activeType = qnaInAppInstance.config.type === 'line' ? 'loss' : qnaInAppInstance.config.type === 'bar' ? (qnaInAppInstance.config.data.labels[0].includes('청구') ? 'timeline' : 'fee') : 'loss';
+        renderQnaInAppChart(activeType);
+      }
+      // 활성화된 자율 Q&A 차트 실시간 갱신
+      if (soloQnaInstance) {
+        const activeTypeSolo = soloQnaInstance.config.type === 'line' ? 'loss' : soloQnaInstance.config.type === 'bar' ? (soloQnaInstance.config.data.labels[0].includes('청구') ? 'timeline' : 'fee') : 'loss';
+        renderSoloQnaChart(activeTypeSolo);
+      }
+
+      writeAuditLog("USER", `가입 설계 원금을 [${currentInvestmentAmount.toLocaleString()} 만원]으로 실시간 동적 재설정했습니다.`);
+    }
+
+    function setQuickAmount(amount) {
+      changeInvestmentAmount(amount);
+      // 포커스 제거 처리
+      document.querySelectorAll('.grid-cols-4 button').forEach(btn => {
+        btn.className = "py-1 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-600 rounded-lg border border-slate-200 transition-all";
+      });
+      event.target.className = "py-1 bg-woori-sky text-[10px] font-bold text-woori-blue rounded-lg border border-woori-blue/20 transition-all";
+    }
+
+    // 06. 세부 응답 액션 메소드들
+    function rejectAICallAndGoSolo() {
+      isAIRoute = false;
+      writeAuditLog("USER", "AI 음성 전화를 거절하고 혼자 기입하는 자율 진단 폼으로 이관합니다.");
+      transitionToStep('solo-form');
+    }
+
+    function acceptAICallRequest() {
+      isAIRoute = true;
+      transitionToStep('step-3');
+    }
+
+    function playRingtone(shouldPlay) {
+      const audio = document.getElementById('virtual-ringtone');
+      if (shouldPlay) {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log("벨소리 재생 오디오 락 상태 해제 대기 중."));
+      } else {
+        audio.pause();
+      }
+    }
+
+    function connectCall() {
+      playRingtone(false);
+      writeAuditLog("SYSTEM", "고객이 원격 원천 발신을 최종 수락하였습니다. AI 양방향 음성 채널이 결속되었습니다.");
+      transitionToStep('call-propensity');
+    }
+
+    function endCallAndBack() {
+      playRingtone(false);
+      writeAuditLog("USER", "고객이 수신 전화를 단절하고 초기화 화면으로 되돌아갑니다.");
+      transitionToStep('step-1');
+    }
+
+    function hangUpPropensityAndSwitchToSolo() {
+      stopPropensityTimer();
+      window.speechSynthesis.cancel();
+      isAIRoute = false;
+      writeAuditLog("SYSTEM", "성향 진단 중 AI 통화가 차단되었습니다. 작성 중이던 내역 그대로 자율 진단 폼으로 안전 수취 인계합니다.");
+      transitionToStep('solo-form');
+    }
+
+    function hangUpQnaAndSwitchToSolo() {
+      stopQnaTimer();
+      window.speechSynthesis.cancel();
+      isAIRoute = false;
+      writeAuditLog("SYSTEM", "질의응답 중 AI 통화가 중단되었습니다. 고객 안전 가이드 연속성을 위해 모바일 단독 자율 분석실로 계승 이관합니다.");
+      transitionToStep('solo-qna');
+    }
+
+    // 07. 가상 AI 성향 진단 엔진
+    function runPropensityAI(sceneKey) {
+      const scene = PROPENSITY_SCENES[sceneKey];
+      if (!scene) return;
+
+      renderPropensityInAppChart(scene.data);
+
+      speakAI(scene.text);
+      document.getElementById('ai-propensity-subtitle').innerText = scene.text;
+
+      const activeBox = document.getElementById('propensity-interactive-box');
+      activeBox.innerHTML = '';
+
+      scene.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.innerHTML = `<span class="text-woori-blue font-bold mr-1.5">•</span> ${choice.text}`;
+        btn.className = "w-full p-3 bg-woori-sky/60 hover:bg-woori-sky border border-woori-blue/10 hover:border-woori-blue text-xs font-bold text-slate-800 rounded-xl text-left transition-all active:scale-[0.98]";
+        btn.onclick = () => {
+          writeAuditLog("USER", `[진단답변] "${choice.text}" 선택 완료.`);
+          
+          if (choice.value === 'safe') userPropensity = '초안정형';
+          if (choice.value === 'mid') userPropensity = '위험중립형';
+          if (choice.value === 'high') userPropensity = '적극투자형';
+
+          if (choice.next === 'trigger_selection_safe') {
+            userPropensity = '초안정형';
+            stopPropensityTimer();
+            transitionToStep('step-product-selection');
+          } else if (choice.next === 'trigger_selection_mid') {
+            userPropensity = '위험중립형';
+            stopPropensityTimer();
+            transitionToStep('step-product-selection');
+          } else if (choice.next === 'trigger_selection_high') {
+            userPropensity = '적극투자형';
+            stopPropensityTimer();
+            transitionToStep('step-product-selection');
+          } else {
+            runPropensityAI(choice.next);
+          }
+        };
+        activeBox.appendChild(btn);
+      });
+
+      writeAuditLog("AI", `[성향진단] "${scene.text.substring(0, 24)}..." 안내 개시.`);
+    }
+
+    // 08. 자율 성향 설문 3단 분석 연산기
+    function calculateSoloPropensity() {
+      const q1Val = document.querySelector('input[name="solo_q1"]:checked')?.value || 'mid';
+      const q2Val = document.querySelector('input[name="solo_q2"]:checked')?.value || 'mid';
+      const q3Val = document.querySelector('input[name="solo_q3"]:checked')?.value || 'novice';
+
+      let safeScore = 30;
+      let midScore = 40;
+      let highScore = 30;
+
+      if (q1Val === 'safe') { safeScore += 50; midScore -= 20; highScore -= 30; }
+      else if (q1Val === 'high') { safeScore -= 30; midScore -= 10; highScore += 50; }
+
+      if (q2Val === 'short') { safeScore += 20; highScore -= 20; }
+      else if (q2Val === 'long') { midScore -= 20; highScore += 20; }
+
+      if (q3Val === 'novice') { safeScore += 10; highScore -= 10; }
+
+      safeScore = Math.max(0, Math.min(100, safeScore));
+      midScore = Math.max(0, Math.min(100, midScore));
+      highScore = Math.max(0, Math.min(100, highScore));
+      const total = safeScore + midScore + highScore;
+      const finalData = [
+        Math.round((safeScore/total)*100),
+        Math.round((midScore/total)*100),
+        Math.round((highScore/total)*100)
+      ];
+
+      userPropensity = "위험중립형";
+      if (finalData[0] > finalData[1] && finalData[0] > finalData[2]) {
+        userPropensity = "초안정형";
+      } else if (finalData[2] > finalData[0] && finalData[2] > finalData[1]) {
+        userPropensity = "적극투자형";
+      }
+
+      document.getElementById('solo-propensity-result').innerText = userPropensity;
+      document.getElementById('solo-match-fund-title').innerText = userPropensity === '적극투자형' ? PRODUCTS_DB.stock.name : PRODUCTS_DB.bond.name;
+
+      renderSoloPropensityChart(finalData);
+    }
+
+    function finishSoloSurveyAndGoToProducts() {
+      writeAuditLog("SYSTEM", "고객이 직접 3선식 성향 진단서 서식을 완성했습니다. 탐색 대시보드로 이동합니다.");
+      transitionToStep('step-product-selection');
+    }
+
+    // 09. 2개 탭 포트폴리오 카드 빌더 (성향에 맞는 종목 추천 / 모든 종목 보기)
+    let activeProductTab = 'recommend';
+
+    function switchProductTab(tabId) {
+      activeProductTab = tabId;
+      const recBtn = document.getElementById('tab-recommend');
+      const allBtn = document.getElementById('tab-all');
+      const recCont = document.getElementById('tab-content-recommend');
+      const allCont = document.getElementById('tab-content-all');
+
+      if (tabId === 'recommend') {
+        recBtn.className = "flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all bg-white text-woori-blue shadow-sm";
+        allBtn.className = "flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all text-slate-600 hover:text-slate-900";
+        recCont.classList.remove('hidden');
+        allCont.classList.add('hidden');
+        writeAuditLog("USER", "성향 맞춤 추천 포트폴리오 탭을 조회합니다.");
+      } else {
+        allBtn.className = "flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all bg-white text-woori-blue shadow-sm";
+        recBtn.className = "flex-1 text-center font-bold text-xs py-2 rounded-lg transition-all text-slate-600 hover:text-slate-900";
+        allCont.classList.remove('hidden');
+        recCont.classList.remove('hidden');
+        recCont.classList.add('hidden'); // 추천 탭을 완전히 교체
+        allCont.classList.remove('hidden');
+        writeAuditLog("USER", "우리은행 전체 추천 펀드 라인업 탭을 확인합니다.");
+      }
+    }
+
+    function renderProductTabs() {
+      const recCont = document.getElementById('tab-content-recommend');
+      const allCont = document.getElementById('tab-content-all');
+      
+      recCont.innerHTML = '';
+      allCont.innerHTML = '';
+
+      // 성향 결과에 비례한 단일 맞춤형 카드 렌더링
+      let matchedProd = PRODUCTS_DB.bond;
+      if (userPropensity === '적극투자형') {
+        matchedProd = PRODUCTS_DB.stock;
+      } else if (userPropensity === '위험중립형') {
+        matchedProd = PRODUCTS_DB.esg;
+      }
+      
+      recCont.appendChild(createProductCard(matchedProd));
+
+      // 전체 탭에는 4종 전격 배치 (피드백 반영)
+      allCont.appendChild(createProductCard(PRODUCTS_DB.bond));
+      allCont.appendChild(createProductCard(PRODUCTS_DB.esg));
+      allCont.appendChild(createProductCard(PRODUCTS_DB.tdf));
+      allCont.appendChild(createProductCard(PRODUCTS_DB.stock));
+    }
+
+    function createProductCard(prod) {
+      const card = document.createElement('div');
+      card.className = "bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col space-y-3 relative hover:border-woori-blue transition-all";
+      
+      const badgeClass = prod.badge.includes('고수익') ? "bg-red-50 text-red-600" : prod.badge.includes('연금') ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600";
+
+      card.innerHTML = `
+        <div class="absolute top-4 right-4 ${badgeClass} text-[9px] font-bold px-2 py-0.5 rounded">${prod.badge}</div>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-woori-sky flex items-center justify-center text-woori-blue font-bold text-xs shrink-0">W</div>
+          <div>
+            <h4 class="font-bold text-slate-800 text-xs">${prod.name}</h4>
+            <p class="text-[10px] text-slate-400 mt-0.5">${prod.desc}</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 border-t border-slate-50 pt-2.5 text-center text-[10px]">
+          <div>
+            <p class="text-slate-400 text-[9px]">목표 기대수익</p>
+            <p class="font-bold text-slate-800 text-xs">${prod.yield}</p>
+          </div>
+          <div>
+            <p class="text-slate-400 text-[9px]">상품 등급 및 위험</p>
+            <p class="font-bold text-amber-500 text-xs">${prod.risk}</p>
+          </div>
+        </div>
+        <!-- 연동 추천 칭찬 멘트 작게 힌트 노출 -->
+        <div class="bg-slate-50 p-2 rounded-xl text-[9.5px] text-slate-500 leading-relaxed border border-slate-100">
+          💡 <b>AI 행원의 추천 명분:</b> ${prod.praise.substring(0, 68)}...
+        </div>
+        <button class="w-full bg-woori-blue text-white font-bold text-xs py-2.5 rounded-xl hover:bg-woori-dark transition-all">
+          선택 및 세부 상세 분석 개시
+        </button>
+      `;
+
+      card.querySelector('button').onclick = () => {
+        selectedFundName = prod.name;
+        selectedFundRisk = prod.risk;
+        document.getElementById('monitor-fund-type').innerText = selectedFundName;
+        document.getElementById('success-fund-title').innerText = selectedFundName;
+        writeAuditLog("USER", `"${selectedFundName}" 상품 선택 완료. 정밀 정보 검증방으로 진입합니다.`);
+        
+        if (isAIRoute) {
+          transitionToStep('call-qna');
+        } else {
+          transitionToStep('solo-qna');
+        }
+      };
+
+      return card;
+    }
+
+    // 10. AI와의 실시간 Q&A 상세 발화 싱크로 엔진
+    function runQnaAI(sceneKey) {
+      const scene = QNA_SCENES[sceneKey];
+      if (!scene) return;
+
+      document.getElementById('in-app-qna-chart-tag').innerText = sceneKey === 'greeting' ? '설명대기' : '정밀 분석 시각화';
+      renderQnaInAppChart(scene.chartType);
+
+      // AI 추천 칭찬/이유 스피킹 스크립트 결합 (피드백 반영)
+      let talkText = scene.text;
+      if (sceneKey === 'greeting') {
+        // 첫 진입 시 강력한 연동 명분 설명 낭독 덧붙임
+        let matchingPraise = "";
+        if (selectedFundName.includes('국공채')) matchingPraise = PRODUCTS_DB.bond.praise;
+        else if (selectedFundName.includes('IT')) matchingPraise = PRODUCTS_DB.stock.praise;
+        else if (selectedFundName.includes('TDF')) matchingPraise = PRODUCTS_DB.tdf.praise;
+        else matchingPraise = PRODUCTS_DB.esg.praise;
+        
+        talkText = `${matchingPraise} ${scene.text}`;
+      }
+
+      speakAI(talkText);
+      document.getElementById('ai-qna-subtitle').innerText = talkText;
+
+      document.querySelectorAll('.viz-card').forEach(card => card.classList.remove('focus'));
+      if (scene.chartType) {
+        const monitorCard = document.getElementById(`viz-${scene.chartType}`);
+        if (monitorCard) {
+          monitorCard.classList.add('focus');
+          monitorCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+
+      const container = document.getElementById('qna-user-voice-options');
+      container.innerHTML = '';
+
+      scene.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.innerText = choice.text;
+        btn.className = "p-2 bg-woori-sky border border-woori-blue/20 hover:border-woori-blue text-woori-blue text-[10px] font-bold rounded-xl text-left leading-tight shadow-sm active:scale-95 transition-all";
+        btn.onclick = () => {
+          writeAuditLog("USER", `[AI 질문] "${choice.text}" 터치 수집.`);
+          if (choice.next === 'finish_qna_session') {
+            stopQnaTimer();
+            transitionToStep('gateway');
+          } else {
+            runQnaAI(choice.next);
+          }
+        };
+        container.appendChild(btn);
+      });
+
+      writeAuditLog("AI", `[상세분석] "${talkText.substring(0, 24)}..." 음성 송출.`);
+    }
+
+    // 11. 자율 가입 가이드 전용 개별 Q&A 그래프 탐색기
+    function renderSoloQnaGraph(type) {
+      writeAuditLog("USER", `고객이 자율 펀드 구조 질의 [${type}]를 클릭해 시각차트를 분석합니다.`);
+      renderSoloQnaChart(type);
+    }
+
+    function emergencyCallAIFromSolo() {
+      writeAuditLog("USER", "자율 Q&A 설명 도중, 이해도 강화를 위해 AI 행원 김민지 콜백을 다시 요청합니다.");
+      isAIRoute = true;
+      transitionToStep('step-3');
+    }
+
+    function emergencyCallAI() {
+      writeAuditLog("USER", "자율 진단서 작성 중, 어려움을 느껴 AI 안내사 연결을 다시 요청합니다.");
+      isAIRoute = true;
+      transitionToStep('step-3');
+    }
+
+    function goGatewayDirectly() {
+      transitionToStep('gateway');
+    }
+
+    function rejectFinalGateway() {
+      writeAuditLog("USER", "최종 게이트웨이 고지 확인 후, 계약 가입을 보류하고 타 펀드 탐색(2개 탭)으로 이탈 복귀를 결정했습니다.");
+      transitionToStep('step-product-selection');
+    }
+
+    function approveFinalGateway() {
+      writeAuditLog("USER", "원금 전액 비보증 사실을 명백히 수락하고 가입 승인을 단행했습니다.");
+      transitionToStep('signature');
+    }
+
+    // 12. 전자 서명 모듈 (HTML5 Canvas)
+    let sigCanvas, sigCtx, isDrawing = false;
+
+    function initSignaturePad() {
+      sigCanvas = document.getElementById('sig-canvas');
+      sigCtx = sigCanvas.getContext('2d');
+      sigCtx.strokeStyle = "#0046AD";
+      sigCtx.lineWidth = 3;
+      sigCtx.lineCap = "round";
+
+      const startDrawing = (e) => {
+        isDrawing = true;
+        draw(e);
+      };
+      const stopDrawing = () => {
+        isDrawing = false;
+        sigCtx.beginPath();
+      };
+      const draw = (e) => {
+        if (!isDrawing) return;
+        const rect = sigCanvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        sigCtx.lineTo(x, y);
+        sigCtx.stroke();
+        sigCtx.beginPath();
+        sigCtx.moveTo(x, y);
+      };
+
+      sigCanvas.onmousedown = startDrawing;
+      sigCanvas.onmousemove = draw;
+      sigCanvas.onmouseup = stopDrawing;
+
+      sigCanvas.ontouchstart = (e) => { e.preventDefault(); startDrawing(e); };
+      sigCanvas.ontouchmove = (e) => { e.preventDefault(); draw(e); };
+      sigCanvas.ontouchend = stopDrawing;
+    }
+
+    function clearSigCanvas() {
+      if (sigCanvas) {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+        writeAuditLog("USER", "전자서명 초기화를 시도했습니다.");
+      }
+    }
+
+    function finishAllDemoProcess() {
+      writeAuditLog("COMPLIANCE", "최종 계약 결속 성공. AI 가이드 준수 원장 이력이 무결성 원장에 적치 보관되었습니다.");
+      
+      document.querySelectorAll('.mobile-step').forEach(step => step.classList.add('hidden'));
+      document.getElementById('step-success').classList.remove('hidden');
+    }
+
+    // 13. 개별 프로세스 타이머 제어자
+    function startPropensityTimer() {
+      propensityTimerSec = 0;
+      clearInterval(propensityTimerInterval);
+      propensityTimerInterval = setInterval(() => {
+        propensityTimerSec++;
+        const min = String(Math.floor(propensityTimerSec / 60)).padStart(2, '0');
+        const sec = String(propensityTimerSec % 60).padStart(2, '0');
+        const target = document.getElementById('propensity-timer');
+        if (target) target.innerText = `${min}:${sec}`;
+      }, 1000);
+    }
+
+    function stopPropensityTimer() {
+      clearInterval(propensityTimerInterval);
+    }
+
+    function startQnaTimer() {
+      qnaTimerSec = 0;
+      clearInterval(qnaTimerInterval);
+      qnaTimerInterval = setInterval(() => {
+        qnaTimerSec++;
+        const min = String(Math.floor(qnaTimerSec / 60)).padStart(2, '0');
+        const sec = String(qnaTimerSec % 60).padStart(2, '0');
+        const target = document.getElementById('qna-timer');
+        if (target) target.innerText = `${min}:${sec}`;
+      }, 1000);
+    }
+
+    function stopQnaTimer() {
+      clearInterval(qnaTimerInterval);
+    }
+
+    // 14. 로그 라이터 모듈
+    function writeAuditLog(role, message) {
+      const box = document.getElementById('audit-log-box');
+      const timestamp = new Date().toLocaleTimeString('ko-KR', { hour12: false });
+      
+      let badgeColor = "text-slate-400";
+      if (role === "AI") badgeColor = "text-sky-400";
+      if (role === "USER") badgeColor = "text-emerald-400 font-bold";
+      if (role === "COMPLIANCE") badgeColor = "text-rose-400 font-bold";
+      if (role === "SYSTEM") badgeColor = "text-slate-400";
+
+      const logElement = document.createElement('div');
+      logElement.className = "border-b border-slate-900/60 pb-1";
+      logElement.innerHTML = `<span class="text-slate-600">${timestamp}</span> <span class="${badgeColor}">[${role}]</span> ${message}`;
+      
+      box.appendChild(logElement);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearAuditLogs() {
+      document.getElementById('audit-log-box').innerHTML = '<div class="text-slate-500">[SYSTEM] 로그 소거 완료. 신규 동작을 관측합니다.</div>';
+    }
+
+    // 15. 전체 리셋
+    function resetDemo() {
+      window.speechSynthesis.cancel();
+      stopPropensityTimer();
+      stopQnaTimer();
+      playRingtone(false);
+      
+      isAIRoute = true;
+      userPropensity = '위험중립형';
+      selectedFundName = '우리 단기 국공채 펀드';
+      currentInvestmentAmount = 1000;
+
+      // 모바일 인풋 초기값 동기화
+      const inputInApp = document.getElementById('investment-amount-input');
+      const inputSolo = document.getElementById('investment-amount-input-solo');
+      if (inputInApp) inputInApp.value = 1000;
+      if (inputSolo) inputSolo.value = 1000;
+
+      if (propensityInAppInstance) propensityInAppInstance.destroy();
+      if (soloPropensityInstance) soloPropensityInstance.destroy();
+      if (qnaInAppInstance) qnaInAppInstance.destroy();
+      if (soloQnaInstance) soloQnaInstance.destroy();
+
+      document.querySelectorAll('.viz-card').forEach(card => card.classList.remove('focus'));
+      
+      transitionToStep('step-1');
+      clearAuditLogs();
+      writeAuditLog("SYSTEM", "데모 시스템 전역이 공장 출하 초기 기조 조건으로 전격 복구 완료되었습니다.");
+    }
+  </script>
+</body>
+</html>
