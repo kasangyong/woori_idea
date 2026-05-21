@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InterSteller — 시나리오 B</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="phone-wrap">
+  <div class="phone">
+
+    <div class="status-bar">
+      <span>11:21</span>
+      <span>▌▌▌▌ 5G 🔋</span>
+    </div>
+
+    <!-- ═══ S1: 펀드 목록 ═══ -->
+    <div class="screen active" id="s1">
+      <div class="app-header">
+        <button class="back" onclick="location.href='index.html'">‹</button>
+        <span class="title">펀드</span>
+      </div>
+      <div class="scroll-area" style="padding:16px;">
+
+        <!-- 고객 투자성향 배너 -->
+        <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:12px;border-left:4px solid #0046AD;">
+          <p style="font-size:13px;color:#0046AD;font-weight:700;">박영희 님의 투자성향은 <span style="color:#E65100;">안정추구형</span>입니다.</p>
+          <p style="font-size:11px;color:#888;margin-top:2px;">※ 금융소비자보호법에 따라 고객 성향에 맞는 상품을 안내드립니다.</p>
+        </div>
+
+        <!-- 펀드 1: 단기채권 (적합) -->
+        <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="location.href='scenario-a.html'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <span class="fund-tag">채권형</span>
+              <div style="font-size:15px;font-weight:800;color:#1A1A1A;margin-top:4px;">우리 단기채권 펀드</div>
+            </div>
+            <span style="font-size:20px;font-weight:900;color:#1469CC;">3.5%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="dots">
+              <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+            <span style="font-size:11px;background:#E8F5E9;color:#2E7D32;font-weight:700;padding:3px 8px;border-radius:4px;">성향 적합</span>
+          </div>
+        </div>
+
+        <!-- 펀드 2: 글로벌 주식형 (위험) — 핵심 -->
+        <div class="card" style="margin-bottom:10px;cursor:pointer;border:2px solid #FFCDD2;" onclick="showS(2, 'stock')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <span class="fund-tag" style="background:#FFEBEE;color:#C62828;">주식형 · 해외</span>
+              <div style="font-size:15px;font-weight:800;color:#1A1A1A;margin-top:4px;">우리 글로벌 주식형 펀드 4호</div>
+            </div>
+            <span style="font-size:20px;font-weight:900;color:#C62828;">12.4%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="dots">
+              <div class="dot danger"></div><div class="dot danger"></div><div class="dot danger"></div>
+              <div class="dot danger"></div><div class="dot danger"></div>
+            </div>
+            <span style="font-size:11px;background:#FFEBEE;color:#C62828;font-weight:700;padding:3px 8px;border-radius:4px;">⚠ 최고 위험 5등급</span>
+          </div>
+        </div>
+
+        <!-- 펀드 3 -->
+        <div class="card" style="opacity:.6;cursor:pointer;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <span class="fund-tag">혼합형</span>
+              <div style="font-size:15px;font-weight:800;color:#1A1A1A;margin-top:4px;">우리 밸런스 혼합 펀드</div>
+            </div>
+            <span style="font-size:20px;font-weight:900;color:#1469CC;">6.2%</span>
+          </div>
+          <div class="dots">
+            <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+            <div class="dot on"></div><div class="dot"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ S2: 펀드 상세 (글로벌 주식형 선택 시) ═══ -->
+    <div class="screen" id="s2">
+      <div class="app-header">
+        <button class="back" onclick="showS(1)">‹</button>
+        <span class="title">펀드</span>
+      </div>
+      <div class="scroll-area">
+        <!-- Hero: 장점 위주 일반 상세 페이지 -->
+        <div class="fund-hero">
+          <span class="fund-tag" style="background:#FFEBEE;color:#C62828;">주식형 · 해외</span>
+          <h2 class="fund-name">우리 글로벌 주식형 펀드 4호</h2>
+          <p class="fund-sub">미국·유럽·아시아 우량 주식에 분산 투자</p>
+          <div class="fund-rate-box" style="background:#FFF3E0;">
+            <div class="fund-rate-label">연 기대수익률 (최근 1년)</div>
+            <div class="fund-rate" style="color:#C62828;">12.4%</div>
+            <div class="fund-rate-note">과거 수익률은 미래를 보장하지 않습니다</div>
+          </div>
+        </div>
+
+        <div style="padding:0 16px 8px;background:#fff;margin-bottom:8px;">
+          <div class="metric">
+            <span class="m-label">위험등급</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="dots">
+                <div class="dot danger"></div><div class="dot danger"></div><div class="dot danger"></div>
+                <div class="dot danger"></div><div class="dot danger"></div>
+              </div>
+              <span class="m-val danger">5등급 (최고 위험)</span>
+            </div>
+          </div>
+          <div class="metric">
+            <span class="m-label">운용보수</span>
+            <span class="m-val">연 0.8%</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">TER (총비용)</span>
+            <span class="m-val warn">연 2.1%</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">예금자보호</span>
+            <span class="m-val danger">미대상</span>
+          </div>
+          <div class="metric" style="border:none;">
+            <span class="m-label">환매</span>
+            <span class="m-val">신청 후 영업일 +3</span>
+          </div>
+        </div>
+
+        <!-- 장점 위주 설명 (일반 앱처럼) -->
+        <div style="padding:0 16px 16px;">
+          <div style="background:#F5F5F7;border-radius:12px;padding:14px;">
+            <h4 style="font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:10px;">📈 이런 분께 추천해요</h4>
+            <p style="font-size:13px;color:#555;line-height:1.7;">
+              • 높은 수익을 기대하시는 분<br>
+              • 글로벌 포트폴리오에 관심 있는 분<br>
+              • 장기 투자를 계획하시는 분
+            </p>
+          </div>
+        </div>
+        <div style="height:72px;"></div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn-p" onclick="showS(3)">가입하기</button>
+      </div>
+    </div>
+
+    <!-- ═══ S3: ARS 모달 (아니요 경로) ═══ -->
+    <div class="screen" id="s3">
+      <div class="app-header">
+        <button class="back" onclick="showS(2)">‹</button>
+        <span class="title">펀드</span>
+      </div>
+      <div style="flex:1;opacity:.2;padding:16px;pointer-events:none;">
+        <div style="height:160px;background:#F0F2F5;border-radius:12px;"></div>
+      </div>
+      <div class="sheet-overlay">
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="bot-row">
+            <div class="bot-avatar">🤖</div>
+            <div class="bot-card">
+              <p>
+                이 상품은 <span class="hl">원금 손실이 가능한 최고 위험 상품</span>입니다.<br>
+                AI 행원 김민지가 전화로 자세히 안내드릴 수 있어요.
+              </p>
+            </div>
+          </div>
+          <p style="text-align:center;font-size:15px;font-weight:700;color:#1A1A1A;margin:14px 0 16px;">"안내 받으시겠습니까?"</p>
+          <button class="btn-p" onclick="location.href='scenario-a.html?call=1'">📞 네, 전화 받을게요</button>
+          <button class="btn-g" onclick="showS(4)">아니요, 혼자 볼게요</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S4: 게이트웨이 (강제 — 위험 경고) ═══ -->
+    <div class="screen" id="s4">
+      <div class="app-header">
+        <span class="title">가입 직전 확인</span>
+      </div>
+      <div class="scroll-area" style="padding:16px;background:#fff;">
+
+        <!-- Strong warning -->
+        <div class="gw-warn-banner">
+          <h3>⚠ 박영희 님께는 "주의가 필요한 상품"입니다</h3>
+          <p>고객님의 투자성향(안정추구형)과 맞지 않는 고위험 상품입니다.</p>
+        </div>
+
+        <!-- Suitability score -->
+        <div class="gw-score">
+          <div class="dots">
+            <div class="dot danger"></div><div class="dot danger"></div>
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+          <span class="gw-score-label">적합성 점수 2/5 — 부적합</span>
+        </div>
+
+        <!-- Check 1: Risk 5/5 -->
+        <div class="gw-item" style="border-color:#FFCDD2;">
+          <div class="gw-num">주의 1</div>
+          <div class="gw-ititle">위험등급 5/5 — 최고 위험 (첫 고위험 가입)</div>
+          <svg class="chart-svg" viewBox="0 0 280 70">
+            <rect x="10" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="63" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="116" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="169" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="222" y="20" width="48" height="22" rx="5" fill="#C62828"/>
+            <text x="34"  y="35" text-anchor="middle" font-size="11" fill="#fff">1</text>
+            <text x="87"  y="35" text-anchor="middle" font-size="11" fill="#fff">2</text>
+            <text x="140" y="35" text-anchor="middle" font-size="11" fill="#fff">3</text>
+            <text x="193" y="35" text-anchor="middle" font-size="11" fill="#fff">4</text>
+            <text x="246" y="35" text-anchor="middle" font-size="11" fill="#fff" font-weight="800">5</text>
+            <polygon points="246,8 239,18 253,18" fill="#C62828"/>
+            <text x="246" y="7" text-anchor="middle" font-size="9" fill="#C62828" font-weight="700">현재</text>
+            <text x="10"  y="58" font-size="9" fill="#aaa">낮음</text>
+            <text x="242" y="58" font-size="9" fill="#C62828" font-weight="700">최고 위험</text>
+          </svg>
+          <p class="gw-note">박영희 님의 거래 이력상 고위험 상품 가입 이력이 없습니다.</p>
+        </div>
+
+        <!-- Check 2: Loss simulation -->
+        <div class="gw-item" style="border-color:#FFCDD2;">
+          <div class="gw-num">주의 2</div>
+          <div class="gw-ititle">글로벌 주식 변동성 — 300만~1,500만 변동 가능</div>
+          <svg class="chart-svg" viewBox="0 0 220 130">
+            <line x1="32" y1="10" x2="32" y2="100" stroke="#E0E0E0" stroke-width="1"/>
+            <line x1="32" y1="100" x2="210" y2="100" stroke="#E0E0E0" stroke-width="1"/>
+            <!-- y: scale 300~1500 = 1200 range. h=90. y=10+(1500-v)/1200*90 -->
+            <!-- 1000 → 10+37.5=47.5 | 1200→10+25=35 | 1400→10+8.3=18.3 | 1500→10+0=10 -->
+            <!-- 300→10+90=100 | 500→10+75=85 | 700→10+60=70 -->
+            <line x1="32" y1="10"  x2="210" y2="10"  stroke="#E0E0E0" stroke-width="1" stroke-dasharray="3"/>
+            <text x="28" y="14"  text-anchor="end" font-size="9" fill="#aaa">1,500</text>
+            <text x="28" y="51"  text-anchor="end" font-size="9" fill="#aaa">1,000</text>
+            <text x="28" y="104" text-anchor="end" font-size="9" fill="#C62828">300</text>
+            <!-- optimistic -->
+            <polyline points="32,47 60,38 90,25 120,15 150,12 180,11 210,10"
+                      fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- pessimistic -->
+            <polyline points="32,47 60,60 90,72 120,82 150,90 180,96 210,100"
+                      fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="121" y="118" text-anchor="middle" font-size="9" fill="#aaa">투자기간 (36개월)</text>
+            <line x1="36" y1="115" x2="48" y2="115" stroke="#2E7D32" stroke-width="2"/>
+            <text x="51" y="118" font-size="9" fill="#2E7D32">+50% 시나리오</text>
+            <line x1="108" y1="115" x2="120" y2="115" stroke="#C62828" stroke-width="2"/>
+            <text x="123" y="118" font-size="9" fill="#C62828">-70% 시나리오</text>
+          </svg>
+          <p class="gw-note">1,000만원 투자 시 최악의 경우 300만원까지 손실 가능.</p>
+        </div>
+
+        <!-- Check 3: Recent medical costs -->
+        <div class="gw-item" style="border-color:#FFCDD2;">
+          <div class="gw-num">주의 3</div>
+          <div class="gw-ititle">최근 의료비 1,200만원 — 비상금 부족 위험</div>
+          <div style="background:#FFF3E0;border-radius:10px;padding:12px;margin:8px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;color:#777;">현재 잔고</span>
+              <span style="font-size:15px;font-weight:800;color:#1A1A1A;">1,327,000원</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <span style="font-size:13px;color:#777;">가입 예정 금액</span>
+              <span style="font-size:15px;font-weight:800;color:#C62828;">- 10,000,000원</span>
+            </div>
+            <div style="height:1px;background:#E0E0E0;margin:8px 0;"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:#C62828;font-weight:700;">가입 후 유동자금</span>
+              <span style="font-size:15px;font-weight:800;color:#C62828;">⚠ 부족</span>
+            </div>
+          </div>
+          <p class="gw-note">최근 6개월 의료비 1,200만원 지출 이력. 비상금이 부족해질 수 있습니다.</p>
+        </div>
+
+        <!-- Call CTA -->
+        <button onclick="location.href='scenario-a.html?call=1'" style="width:100%;padding:13px;background:#EBF3FF;border:1.5px solid #0046AD;border-radius:12px;color:#0046AD;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📞 지금이라도 AI 행원 통화하기
+        </button>
+
+        <p class="gw-q">"정말 가입하시겠습니까?"</p>
+        <div style="height:80px;"></div>
+      </div>
+      <div class="bottom-bar">
+        <div class="btn-row">
+          <button class="btn-g" onclick="showS(5)">잠시 보류</button>
+          <button class="btn-p" onclick="showS(5, true)" style="margin:0;background:#C62828;">가입 진행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S5: 결과 (보류 or 진행) ═══ -->
+    <div class="screen" id="s5">
+      <div class="app-header">
+        <span class="title" id="s5Title">가입 보류</span>
+      </div>
+      <div class="complete-wrap" id="s5Content">
+        <!-- JS로 채움 -->
+      </div>
+    </div>
+
+  </div><!-- /phone -->
+</div>
+
+<script>
+const audit = [];
+let selectedFund = 'stock';
+
+function log(type, data) {
+  const e = { type, data, ts: new Date().toISOString() };
+  audit.push(e);
+  console.log('[audit]', e);
+}
+
+function showS(n, extra) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  log('screen', { n, extra });
+
+  if (n === 4) {
+    setTimeout(() => {
+      speak('박영희 님께는 주의가 필요한 상품입니다. 적합성 점수가 2점으로 낮으며, 위험등급 5등급 상품은 고객님 성향과 맞지 않습니다. 정말 가입하시겠습니까?');
+    }, 400);
+  }
+
+  if (n === 5) {
+    const held = !extra;
+    document.getElementById('s5Title').textContent = held ? '가입 보류' : '가입 완료';
+    document.getElementById('s5Content').innerHTML = held ? `
+      <div class="complete-icon">🛡️</div>
+      <h2 class="complete-title">가입이 보류되었습니다</h2>
+      <p class="complete-sub">
+        InterSteller가 박영희 님을<br>
+        부적합 상품 가입으로부터 보호했습니다.
+      </p>
+      <div class="complete-box">
+        <h5>📋 보류 내역</h5>
+        <p>
+          상품: 우리 글로벌 주식형 펀드 4호<br>
+          적합성 점수: 2/5 (부적합)<br>
+          보류 사유: 투자성향 불일치<br>
+          AI 안내: InterSteller 게이트웨이
+        </p>
+      </div>
+      <button class="btn-g" onclick="location.href='scenario-a.html?call=1'" style="width:100%;margin-bottom:10px;">📞 AI 행원 상담 받기</button>
+      <button class="btn-p" onclick="location.href='index.html'" style="width:100%;">홈으로</button>
+    ` : `
+      <div class="complete-icon">✅</div>
+      <h2 class="complete-title">가입이 완료되었습니다</h2>
+      <p class="complete-sub">
+        박영희 님의<br>
+        <strong>우리 글로벌 주식형 펀드 4호</strong><br>
+        1,000만원 가입이 처리되었습니다.
+      </p>
+      <div class="complete-box" style="background:#FFEBEE;border-left:3px solid #C62828;">
+        <h5 style="color:#C62828;">⚠ 위험 인식 확인 완료</h5>
+        <p>고객 단점 3가지 확인 후 자율 결정으로 가입.</p>
+      </div>
+      <button class="btn-p" onclick="location.href='index.html'" style="width:100%;">홈으로</button>
+    `;
+  }
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR'; u.rate = 0.88;
+  const ko = window.speechSynthesis.getVoices().find(v => v.lang.startsWith('ko'));
+  if (ko) u.voice = ko;
+  window.speechSynthesis.speak(u);
+}
+
+window.speechSynthesis?.getVoices();
+log('start', { scenario: 'B' });
+</script>
+</body>
+</html>

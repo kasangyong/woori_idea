@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InterSteller — 시나리오 A</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== PHONE FRAME ===================== -->
+<div class="phone-wrap" id="phoneBg">
+  <div class="phone">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>11:16</span>
+      <span>▌▌▌▌ 5G 🔋</span>
+    </div>
+
+    <!-- ═══ S1: 펀드 상세 ═══ -->
+    <div class="screen active" id="s1">
+      <div class="app-header">
+        <button class="back" onclick="location.href='index.html'">‹</button>
+        <span class="title">펀드</span>
+      </div>
+      <div class="scroll-area">
+        <!-- Hero -->
+        <div class="fund-hero">
+          <span class="fund-tag">채권형 · 국내</span>
+          <h2 class="fund-name">우리 단기채권 펀드</h2>
+          <p class="fund-sub">안정적인 수익을 추구하는 국내 채권형 펀드</p>
+          <div class="fund-rate-box">
+            <div class="fund-rate-label">연 기대수익률 (최근 1년)</div>
+            <div class="fund-rate">3.5%</div>
+            <div class="fund-rate-note">과거 수익률은 미래를 보장하지 않습니다</div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div style="padding:0 16px 8px; background:#fff; margin-bottom:8px;">
+          <div class="metric">
+            <span class="m-label">위험등급</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="dots">
+                <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+                <div class="dot"></div><div class="dot"></div>
+              </div>
+              <span class="m-val warn">3등급 (중간)</span>
+            </div>
+          </div>
+          <div class="metric">
+            <span class="m-label">운용보수</span>
+            <span class="m-val">연 0.4%</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">TER (총비용)</span>
+            <span class="m-val warn">연 1.2%</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">환매</span>
+            <span class="m-val">신청 후 영업일 +2</span>
+          </div>
+          <div class="metric">
+            <span class="m-label">예금자보호</span>
+            <span class="m-val danger">미대상</span>
+          </div>
+          <div class="metric" style="border:none;">
+            <span class="m-label">최소 투자금</span>
+            <span class="m-val">10만원</span>
+          </div>
+        </div>
+
+        <!-- Notice -->
+        <div style="padding:0 16px 16px;">
+          <div class="notice-box">
+            <p>⚠ 이 상품은 <strong>원금 손실이 발생할 수 있으며</strong> 예금자보호법에 따라 보호되지 않습니다.</p>
+          </div>
+        </div>
+        <div style="height:72px;"></div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn-p" onclick="showS(2)">가입하기</button>
+      </div>
+    </div>
+
+    <!-- ═══ S2: ARS 동의 모달 ═══ -->
+    <div class="screen" id="s2">
+      <div class="app-header">
+        <button class="back" onclick="showS(1)">‹</button>
+        <span class="title">펀드</span>
+      </div>
+      <!-- 블러 배경 암시 -->
+      <div style="flex:1;opacity:.25;padding:16px;pointer-events:none;">
+        <div style="height:160px;background:#F0F2F5;border-radius:12px;"></div>
+      </div>
+      <!-- Bottom sheet -->
+      <div class="sheet-overlay">
+        <div class="sheet">
+          <div class="sheet-handle"></div>
+          <div class="bot-row">
+            <div class="bot-avatar">🤖</div>
+            <div class="bot-card">
+              <p>
+                펀드는 원금 손실이 가능한 상품입니다.<br>
+                <span class="hl">AI 행원 김민지</span>가 전화로<br>
+                단점까지 솔직하게 안내드릴 수 있어요.
+              </p>
+            </div>
+          </div>
+          <p style="text-align:center;font-size:15px;font-weight:700;color:#1A1A1A;margin:14px 0 16px;">"안내 받으시겠습니까?"</p>
+          <button class="btn-p" onclick="showS(3)">📞 네, 전화 받을게요</button>
+          <button class="btn-g" onclick="location.href='scenario-b.html'">아니요, 혼자 볼게요</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S3: 콜백 대기 ═══ -->
+    <div class="screen" id="s3">
+      <div class="app-header">
+        <span class="title">연결 중</span>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;padding:40px 24px;text-align:center;">
+        <div style="width:80px;height:80px;border-radius:50%;background:#EBF3FF;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:22px;animation:soft-pulse 1.2s infinite;">
+          📞
+        </div>
+        <h3 style="font-size:19px;font-weight:800;color:#1A1A1A;margin-bottom:8px;">전화를 연결하고 있어요</h3>
+        <p style="font-size:14px;color:#888;margin-bottom:4px;">30초 이내</p>
+        <p style="font-size:17px;font-weight:700;color:#0046AD;margin-bottom:20px;">02-2002-XXXX</p>
+        <p style="font-size:13px;color:#999;">번호로 전화드리겠습니다</p>
+      </div>
+    </div>
+
+    <!-- ═══ S4: 전화 수신 ═══ -->
+    <div class="screen" id="s4">
+      <div class="call-incoming">
+        <p class="inc-label">수신 전화</p>
+        <div style="text-align:center;">
+          <div class="inc-avatar">🤖</div>
+          <h2 class="inc-name">김민지</h2>
+          <p class="inc-sub">우리은행 AI 안내사</p>
+          <p class="inc-num">02-2002-XXXX</p>
+        </div>
+        <div class="inc-btns">
+          <div style="text-align:center;">
+            <button class="call-btn call-btn-no"><span>📵</span></button>
+            <p style="color:#fff;font-size:11px;margin-top:6px;opacity:.65;">거절</p>
+          </div>
+          <div style="text-align:center;">
+            <button class="call-btn call-btn-yes" onclick="acceptCall()"><span>📞</span></button>
+            <p style="color:#fff;font-size:11px;margin-top:6px;opacity:.65;">받기</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S5: 통화 중 (phone 내부) ═══ -->
+    <div class="screen" id="s5">
+      <!-- 통화 헤더 (파란 그라디언트) -->
+      <div class="call-phone-head">
+        <div class="call-phone-topbar">
+          <div class="call-timer">📞 <span id="callTimer">00:00</span></div>
+          <span style="font-size:11px;opacity:.65;">AI 행원과 연결됨</span>
+        </div>
+        <div class="call-agent-sm">
+          <div class="call-agent-icon-sm">🤖</div>
+          <div>
+            <div style="font-size:15px;font-weight:800;">김민지</div>
+            <div style="font-size:11px;opacity:.65;">우리은행 AI 안내사</div>
+          </div>
+        </div>
+      </div>
+      <!-- 스크롤 영역 -->
+      <div class="scroll-area" style="padding:12px 14px;background:#F0F2F5;">
+        <!-- AI 자막 -->
+        <div class="call-caption-card">
+          <div style="font-size:10px;font-weight:700;color:#999;letter-spacing:.5px;margin-bottom:6px;">AI 발화 자막</div>
+          <div id="aiCaption" style="font-size:13px;color:#333;line-height:1.75;min-height:50px;">통화가 연결되었습니다. 잠시 후 AI 행원이 인사드립니다.</div>
+        </div>
+        <!-- 시각화 2×2 -->
+        <div style="font-size:12px;font-weight:800;color:#1A1A1A;margin:10px 0 8px;">📊 펀드 정보 — 실시간 시각화</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="viz-card" id="vz-risk">
+            <h5>위험 게이지 (3/5)</h5>
+            <svg class="chart-svg" viewBox="0 0 200 120">
+              <path d="M 28 100 A 72 72 0 0 1 172 100" fill="none" stroke="#E0E0E0" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 28 100 A 72 72 0 0 1 122.2 31.5" fill="none" stroke="#E65100" stroke-width="14" stroke-linecap="round"/>
+              <text x="100" y="86" text-anchor="middle" font-size="24" font-weight="900" fill="#1A1A1A">3/5</text>
+              <text x="100" y="102" text-anchor="middle" font-size="11" fill="#777">중간 위험</text>
+              <text x="28" y="116" text-anchor="middle" font-size="9" fill="#aaa">안전</text>
+              <text x="172" y="116" text-anchor="middle" font-size="9" fill="#aaa">위험</text>
+            </svg>
+          </div>
+          <div class="viz-card" id="vz-loss">
+            <h5>손실 시뮬레이션</h5>
+            <svg class="chart-svg" viewBox="0 0 220 130">
+              <line x1="32" y1="10" x2="32" y2="100" stroke="#E0E0E0" stroke-width="1"/>
+              <line x1="32" y1="100" x2="210" y2="100" stroke="#E0E0E0" stroke-width="1"/>
+              <line x1="32" y1="55" x2="210" y2="55" stroke="#F0F0F0" stroke-width="1" stroke-dasharray="4"/>
+              <text x="28" y="14" text-anchor="end" font-size="9" fill="#aaa">1,200</text>
+              <text x="28" y="59" text-anchor="end" font-size="9" fill="#aaa">1,000</text>
+              <text x="28" y="104" text-anchor="end" font-size="9" fill="#aaa">800</text>
+              <text x="121" y="118" text-anchor="middle" font-size="9" fill="#aaa">36개월</text>
+              <polyline points="32,55 46,53 60,51 74,49 88,47 102,44 116,42 130,40 144,38 158,36 172,34 186,32 210,31" fill="none" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="32,55 46,58 60,64 74,68 88,73 102,76 116,77 130,74 144,73 158,68 172,64 186,61 210,57" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="36" y1="115" x2="50" y2="115" stroke="#2E7D32" stroke-width="2"/>
+              <text x="53" y="118" font-size="9" fill="#2E7D32">수익</text>
+              <line x1="76" y1="115" x2="90" y2="115" stroke="#C62828" stroke-width="2"/>
+              <text x="93" y="118" font-size="9" fill="#C62828">손실</text>
+            </svg>
+          </div>
+          <div class="viz-card" id="vz-fee">
+            <h5>5년 누적 수수료</h5>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:90px;padding-bottom:18px;position:relative;">
+              <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;">
+                <span style="font-size:8px;color:#aaa;">1년</span>
+                <span style="font-size:8px;color:#aaa;">2년</span>
+                <span style="font-size:8px;color:#aaa;">3년</span>
+                <span style="font-size:8px;color:#aaa;">4년</span>
+                <span style="font-size:8px;color:#C62828;font-weight:700;">5년</span>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <span style="font-size:8px;color:#777;">12</span>
+                <div style="width:100%;height:14px;background:#FFCDD2;border-radius:2px 2px 0 0;"></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <span style="font-size:8px;color:#777;">24</span>
+                <div style="width:100%;height:24px;background:#EF9A9A;border-radius:2px 2px 0 0;"></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <span style="font-size:8px;color:#777;">36</span>
+                <div style="width:100%;height:36px;background:#E57373;border-radius:2px 2px 0 0;"></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <span style="font-size:8px;color:#777;">48</span>
+                <div style="width:100%;height:48px;background:#EF5350;border-radius:2px 2px 0 0;"></div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <span style="font-size:8px;font-weight:700;color:#C62828;">60</span>
+                <div style="width:100%;height:60px;background:#C62828;border-radius:2px 2px 0 0;"></div>
+              </div>
+            </div>
+            <p style="font-size:9px;color:#aaa;text-align:center;margin-top:4px;">TER 1.2% · 1,000만원</p>
+          </div>
+          <div class="viz-card" id="vz-timeline">
+            <h5>환매 타임라인</h5>
+            <div style="padding:4px 0;">
+              <div style="display:flex;align-items:center;gap:3px;margin-bottom:8px;">
+                <div style="flex:1;text-align:center;background:#0046AD;color:#fff;padding:7px 2px;border-radius:6px;font-size:10px;font-weight:700;">환매<br>신청</div>
+                <div style="font-size:13px;color:#ccc;">→</div>
+                <div style="flex:1;text-align:center;background:#F5F5F7;color:#888;padding:7px 2px;border-radius:6px;font-size:10px;">심사<br>처리</div>
+                <div style="font-size:13px;color:#ccc;">→</div>
+                <div style="flex:1;text-align:center;background:#E8F5E9;color:#2E7D32;padding:7px 2px;border-radius:6px;font-size:10px;font-weight:700;">계좌<br>입금</div>
+              </div>
+              <div style="display:flex;justify-content:space-around;margin-bottom:8px;">
+                <span style="font-size:9px;color:#aaa;">D day</span>
+                <span style="font-size:9px;color:#aaa;">D+1</span>
+                <span style="font-size:9px;color:#2E7D32;font-weight:700;">D+2</span>
+              </div>
+              <div style="background:#FFF3E0;border-radius:6px;padding:6px 8px;">
+                <p style="font-size:10px;color:#E65100;">⚠ 급전 시 즉시 인출 불가</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 사용자 발화 버튼 -->
+        <div class="call-caption-card" style="margin-bottom:0;">
+          <div style="font-size:10px;font-weight:700;color:#999;letter-spacing:.5px;margin-bottom:8px;">💬 사용자 발화 시뮬레이션</div>
+          <button class="utter-btn-phone" id="ub1" onclick="userSay('recommend')">추천해 주세요</button>
+          <button class="utter-btn-phone" id="ub2" onclick="userSay('ter')" disabled>TER이 뭐예요?</button>
+          <button class="utter-btn-phone" id="ub3" onclick="userSay('loss')" disabled>원금 손실 진짜 가능해요?</button>
+          <button class="utter-btn-phone" id="ub4" onclick="userSay('signup')" disabled>가입할게요</button>
+        </div>
+        <div style="height:12px;"></div>
+      </div>
+      <div class="bottom-bar" style="padding:10px 16px 24px;">
+        <button onclick="endCall()" style="width:100%;padding:14px;background:#C62828;border:none;color:#fff;font-size:14px;font-weight:700;border-radius:12px;cursor:pointer;">☎ 통화 종료 → 게이트웨이</button>
+      </div>
+    </div>
+
+    <!-- ═══ S6: 게이트웨이 ═══ -->
+    <div class="screen" id="s6">
+      <div class="app-header">
+        <span class="title">가입 직전 확인</span>
+      </div>
+      <div class="scroll-area" style="padding:16px;background:#fff;">
+        <div class="gw-banner">
+          <h3>📊 가입 직전 최종 확인</h3>
+          <p>박영희 님, 가입 전 아래 3가지를 꼭 확인해 주세요.</p>
+        </div>
+
+        <!-- Check 1: Risk gauge -->
+        <div class="gw-item">
+          <div class="gw-num">확인 1</div>
+          <div class="gw-ititle">원금 손실 가능 (위험등급 3/5)</div>
+          <svg class="chart-svg" viewBox="0 0 280 70">
+            <rect x="10" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="63" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="116" y="20" width="48" height="22" rx="5" fill="#E65100"/>
+            <rect x="169" y="20" width="48" height="22" rx="5" fill="#E0E0E0"/>
+            <rect x="222" y="20" width="48" height="22" rx="5" fill="#E0E0E0"/>
+            <text x="34"  y="35" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">1</text>
+            <text x="87"  y="35" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">2</text>
+            <text x="140" y="35" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">3</text>
+            <text x="193" y="35" text-anchor="middle" font-size="11" fill="#aaa">4</text>
+            <text x="246" y="35" text-anchor="middle" font-size="11" fill="#aaa">5</text>
+            <polygon points="140,8 133,18 147,18" fill="#E65100"/>
+            <text x="140" y="7" text-anchor="middle" font-size="9" fill="#E65100" font-weight="700">현재</text>
+            <text x="10"  y="58" font-size="9" fill="#aaa">낮음</text>
+            <text x="242" y="58" font-size="9" fill="#aaa">높음</text>
+          </svg>
+          <p class="gw-note">채권 금리 상승 시 원금 손실이 발생할 수 있습니다. 예금자보호 미대상.</p>
+        </div>
+
+        <!-- Check 2: Cumulative fee -->
+        <div class="gw-item">
+          <div class="gw-num">확인 2</div>
+          <div class="gw-ititle">5년 누적 수수료 약 60만원</div>
+          <div style="display:flex;align-items:flex-end;gap:8px;height:90px;padding-bottom:20px;position:relative;">
+            <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;">
+              <span style="font-size:9px;color:#999;">1년</span>
+              <span style="font-size:9px;color:#999;">2년</span>
+              <span style="font-size:9px;color:#999;">3년</span>
+              <span style="font-size:9px;color:#999;">4년</span>
+              <span style="font-size:9px;font-weight:700;color:#C62828;">5년</span>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span style="font-size:9px;color:#777;">12만</span>
+              <div style="width:100%;height:18px;background:#FFCDD2;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span style="font-size:9px;color:#777;">24만</span>
+              <div style="width:100%;height:30px;background:#EF9A9A;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span style="font-size:9px;color:#777;">36만</span>
+              <div style="width:100%;height:44px;background:#E57373;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span style="font-size:9px;color:#777;">48만</span>
+              <div style="width:100%;height:56px;background:#EF5350;border-radius:3px 3px 0 0;"></div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+              <span style="font-size:9px;font-weight:700;color:#C62828;">60만</span>
+              <div style="width:100%;height:68px;background:#C62828;border-radius:3px 3px 0 0;"></div>
+            </div>
+          </div>
+          <p class="gw-note">1,000만원 투자 시 TER 1.2% 기준 누적 수수료</p>
+        </div>
+
+        <!-- Check 3: Redemption timeline -->
+        <div class="gw-item">
+          <div class="gw-num">확인 3</div>
+          <div class="gw-ititle">환매 신청 후 영업일 +2 입금</div>
+          <div style="display:flex;align-items:center;gap:6px;margin:4px 0;">
+            <div style="flex:1;text-align:center;background:#0046AD;color:#fff;padding:9px 4px;border-radius:8px;font-size:11px;font-weight:700;">환매<br>신청</div>
+            <div style="color:#999;font-size:18px;flex-shrink:0;">→</div>
+            <div style="flex:1;text-align:center;background:#F5F5F5;color:#666;padding:9px 4px;border-radius:8px;font-size:11px;">심사<br>처리</div>
+            <div style="color:#999;font-size:18px;flex-shrink:0;">→</div>
+            <div style="flex:1;text-align:center;background:#E8F5E9;color:#2E7D32;padding:9px 4px;border-radius:8px;font-size:11px;font-weight:700;">계좌<br>입금</div>
+          </div>
+          <div style="display:flex;justify-content:space-around;margin-top:4px;">
+            <span style="font-size:10px;color:#999;">D day</span>
+            <span style="font-size:10px;color:#999;">D+1</span>
+            <span style="font-size:10px;font-weight:700;color:#2E7D32;">D+2</span>
+          </div>
+          <p class="gw-note">급전이 필요할 때 즉시 인출이 어려울 수 있습니다.</p>
+        </div>
+
+        <button onclick="speakGateway()" style="width:100%;padding:12px;background:#fff;border:1.5px solid #0046AD;border-radius:10px;color:#0046AD;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px;">🔊 음성으로 다시 듣기</button>
+        <p class="gw-q">"정말 가입하시겠습니까?"</p>
+        <div style="height:80px;"></div>
+      </div>
+      <div class="bottom-bar">
+        <div class="btn-row">
+          <button class="btn-g" onclick="doHold()">잠시 보류</button>
+          <button class="btn-p" onclick="showS(7)" style="margin:0;">가입 진행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ S7: 자필 서명 ═══ -->
+    <div class="screen" id="s7">
+      <div class="app-header">
+        <button class="back" onclick="showS(6)">‹</button>
+        <span class="title">자필 서명</span>
+      </div>
+      <div class="scroll-area" style="padding:20px 16px;background:#fff;">
+        <p style="font-size:14px;color:#333;margin-bottom:2px;">가입 동의를 위해 아래에 서명해 주세요.</p>
+        <p style="font-size:12px;color:#999;margin-bottom:18px;">박영희 · 우리 단기채권 펀드 · 1,000만원</p>
+        <canvas id="sigCanvas" width="358" height="120"></canvas>
+        <button onclick="clearSig()" style="background:none;border:none;color:#aaa;font-size:13px;cursor:pointer;padding:8px 0;margin-top:4px;">✕ 다시 서명</button>
+        <div style="height:80px;"></div>
+      </div>
+      <div class="bottom-bar">
+        <button class="btn-p" id="completeBtn" onclick="showS(8)" disabled style="opacity:.4;">가입 완료</button>
+      </div>
+    </div>
+
+    <!-- ═══ S8: 완료 ═══ -->
+    <div class="screen" id="s8">
+      <div class="app-header">
+        <span class="title">가입 완료</span>
+      </div>
+      <div class="complete-wrap">
+        <div class="complete-icon">✅</div>
+        <h2 class="complete-title">가입이 완료되었습니다</h2>
+        <p class="complete-sub">박영희 님의<br><strong>우리 단기채권 펀드 1,000만원</strong><br>가입이 정상 처리되었습니다.</p>
+        <div class="complete-box">
+          <h5>📋 처리 내역</h5>
+          <p>
+            상품: 우리 단기채권 펀드<br>
+            금액: 1,000만원<br>
+            AI 상담: 김민지 (음성 상담 완료)<br>
+            설명의무: 5대 항목 확인 완료
+          </p>
+        </div>
+        <button onclick="showAudit()" style="width:100%;padding:12px;background:#fff;border:1.5px solid #0046AD;border-radius:10px;color:#0046AD;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:10px;">📊 audit log 보기 (시연용)</button>
+        <button class="btn-p" onclick="location.href='index.html'">홈으로</button>
+      </div>
+    </div>
+
+  </div><!-- /phone -->
+</div><!-- /phoneBg -->
+
+
+<script>
+/* ── State ── */
+const audit = [];
+let callTick = null, callSec = 0;
+let buzzer = null;
+let activeViz = null;
+
+function log(type, data) {
+  const e = { type, data, ts: new Date().toISOString() };
+  audit.push(e);
+  console.log('[audit]', e);
+}
+
+/* ── Screen Management ── */
+function showS(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  log('screen', { n });
+  if (n === 3) setTimeout(() => showS(4), 2500);
+  if (n === 4) startBuzzer();
+  if (n === 6) setTimeout(speakGateway, 400);
+  if (n === 7) initSig();
+}
+
+/* ── Incoming call accept ── */
+function acceptCall() {
+  stopBuzzer();
+  showS(5);
+  startTimer();
+  log('call_accepted', {});
+  setTimeout(() => playAI('greeting'), 700);
+}
+
+function endCall() {
+  stopTimer();
+  showS(6);
+}
+
+/* ── Timer ── */
+function startTimer() {
+  callSec = 0;
+  callTick = setInterval(() => {
+    callSec++;
+    const m = String(Math.floor(callSec/60)).padStart(2,'0');
+    const s = String(callSec%60).padStart(2,'0');
+    document.getElementById('callTimer').textContent = m+':'+s;
+  }, 1000);
+}
+function stopTimer() { clearInterval(callTick); }
+
+/* ── Buzzer (ringtone simulation via Web Audio) ── */
+function startBuzzer() {
+  stopBuzzer();
+  let on = false;
+  buzzer = setInterval(() => {
+    on = !on;
+    if (!on) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = 830;
+      g.gain.setValueAtTime(0.15, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(); osc.stop(ctx.currentTime + 0.4);
+    } catch(e) {}
+  }, 700);
+}
+function stopBuzzer() { clearInterval(buzzer); }
+
+/* ── AI Utterances ── */
+const LINES = {
+  greeting: {
+    text: '안녕하세요, 박영희 고객님. 우리은행 AI 안내사 김민지입니다. 펀드 상품을 살펴보고 계시네요. 편하게 통화하시면서 궁금한 점 말씀해 주세요. 추천해드릴까요?',
+    viz: null
+  },
+  recommend: {
+    text: '고객님은 지금까지 적금 위주로 거래해오셨네요. 단기채권 펀드를 추천드릴게요. 연 3.5% 기대수익에 위험은 낮은 편이에요. 다만 짚어드릴 점이 있어요 — 오른쪽 위험 게이지를 봐주실래요?',
+    viz: 'risk', next: 'ter'
+  },
+  ter: {
+    text: 'TER은 운용·판매보수를 합친 총비용 비율이에요. 1,000만원 가입 시 매년 약 12만원이 빠져나가고, 5년이면 약 60만원입니다. 수수료 차트를 확인해보세요.',
+    viz: 'fee', next: 'loss'
+  },
+  loss: {
+    text: '네, 원금 손실이 가능합니다. 채권 금리가 오르면 펀드 가격이 내려가요. 2022년에 채권형 펀드 가입자 다수가 5~10% 손실을 봤어요. 오른쪽 손실 시뮬레이션 그래프를 보여드릴게요.',
+    viz: 'loss', next: 'signup'
+  },
+  signup: {
+    text: '알겠습니다. 가입 직전 최종 확인 화면으로 이어드릴게요. 단점 3가지를 다시 한 번 확인하신 후 결정해 주세요.',
+    viz: null, goto: 'gateway'
+  }
+};
+
+function playAI(key) {
+  const u = LINES[key]; if (!u) return;
+  document.getElementById('aiCaption').textContent = u.text;
+  log('ai_say', { key });
+
+  // highlight viz
+  if (activeViz) document.getElementById('vz-'+activeViz)?.classList.remove('lit');
+  if (u.viz) { document.getElementById('vz-'+u.viz)?.classList.add('lit'); activeViz = u.viz; }
+
+  speak(u.text);
+  if (u.goto === 'gateway') setTimeout(endCall, 1600);
+}
+
+function userSay(key) {
+  const labels = { recommend:'추천해 주세요', ter:'TER이 뭐예요?', loss:'원금 손실 진짜 가능해요?', signup:'가입할게요' };
+  document.getElementById('aiCaption').textContent = '고객: "' + (labels[key]||key) + '"';
+  log('user_say', { key });
+  const self  = { recommend:'ub1', ter:'ub2', loss:'ub3', signup:'ub4' };
+  const next  = { recommend:'ub2', ter:'ub3', loss:'ub4' };
+  if (self[key]) { document.getElementById(self[key]).disabled = true; document.getElementById(self[key]).classList.add('done'); }
+  if (next[key]) setTimeout(() => { document.getElementById(next[key]).disabled = false; }, 900);
+  setTimeout(() => playAI(key), 700);
+}
+
+/* ── TTS ── */
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR'; u.rate = 0.88; u.pitch = 1;
+  const voices = window.speechSynthesis.getVoices();
+  const ko = voices.find(v => v.lang.startsWith('ko'));
+  if (ko) u.voice = ko;
+  window.speechSynthesis.speak(u);
+}
+
+/* ── Gateway ── */
+function speakGateway() {
+  speak('박영희 님, 가입 전 3가지를 확인해주세요. 첫째, 원금 손실 가능, 위험등급 3등급. 둘째, 5년 누적 수수료 60만원. 셋째, 환매 후 2영업일 후 입금. 정말 가입하시겠습니까?');
+  log('gateway_view', {});
+}
+
+function doHold() {
+  log('hold', {});
+  alert('가입이 보류되었습니다.\n원하실 때 다시 진행하실 수 있어요.');
+}
+
+/* ── Signature ── */
+function initSig() {
+  const c = document.getElementById('sigCanvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  let drawing = false, hasSig = false;
+  const pt = e => {
+    const r = c.getBoundingClientRect();
+    return {
+      x: ((e.clientX ?? e.touches[0].clientX) - r.left) * (c.width / r.width),
+      y: ((e.clientY ?? e.touches[0].clientY) - r.top)  * (c.height / r.height)
+    };
+  };
+  c.onmousedown = c.ontouchstart = e => { e.preventDefault(); drawing=true; const p=pt(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  c.onmousemove = c.ontouchmove  = e => {
+    if (!drawing) return; e.preventDefault();
+    const p = pt(e);
+    ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.strokeStyle='#0046AD';
+    ctx.lineTo(p.x,p.y); ctx.stroke();
+    if (!hasSig) { hasSig=true; const b=document.getElementById('completeBtn'); b.disabled=false; b.style.opacity='1'; }
+  };
+  c.onmouseup = c.ontouchend = () => drawing=false;
+}
+
+function clearSig() {
+  const c = document.getElementById('sigCanvas');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  const b = document.getElementById('completeBtn'); b.disabled=true; b.style.opacity='.4';
+}
+
+/* ── Audit ── */
+function showAudit() {
+  log('audit_view', {});
+  const w = window.open('','_blank');
+  w.document.write(`<html><head><title>InterSteller Audit Log</title><style>
+    body{font-family:monospace;background:#0A0E1A;color:#A8D8A8;padding:24px;}
+    h2{color:#4FC3F7;margin-bottom:16px;}
+    pre{white-space:pre-wrap;font-size:13px;}
+  </style></head><body><h2>InterSteller Audit Log — Scenario A</h2><pre>${JSON.stringify(audit,null,2)}</pre></body></html>`);
+}
+
+/* ── Auto-start if redirected from B ── */
+if (new URLSearchParams(location.search).get('call') === '1') showS(4);
+
+window.speechSynthesis?.getVoices();
+log('start', { scenario:'A' });
+</script>
+</body>
+</html>

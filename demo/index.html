@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WON뱅킹 — 우리은행</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="phone-wrap">
+  <div class="phone" style="background:#F4F6FA;">
+
+    <div class="status-bar" style="background:#004EA2;color:#fff;">
+      <span style="font-weight:600;">11:16</span>
+      <span>▌▌▌▌ 5G 🔋</span>
+    </div>
+
+    <!-- WON뱅킹 헤더 -->
+    <div class="won-header">
+      <div class="won-logo">WON<span class="won-logo-ko">뱅킹</span></div>
+      <div class="won-header-icons">
+        <button class="won-icon-btn">🔔</button>
+        <button class="won-icon-btn">☰</button>
+      </div>
+    </div>
+
+    <div class="scroll-area" style="background:#F4F6FA;">
+
+      <!-- 인사 -->
+      <div class="won-greet">
+        <div>
+          <span class="won-greet-name">박영희 님,</span>
+          <span class="won-greet-sub"> 안녕하세요 👋</span>
+        </div>
+        <span class="won-greet-date">2025.05.21 수</span>
+      </div>
+
+      <!-- 대표 계좌 카드 -->
+      <div class="won-account-card">
+        <div class="won-acc-label">
+          우리 주거래 통장
+          <span class="won-acc-tag">대표</span>
+        </div>
+        <div class="won-acc-amount">1,327,000<span class="won-acc-unit">원</span></div>
+        <div class="won-acc-num">1002-XXX-XXXXXX</div>
+        <div class="won-acc-btns">
+          <button>이체</button>
+          <button>내역</button>
+          <button>관리</button>
+        </div>
+      </div>
+
+      <!-- 빠른 메뉴 -->
+      <div class="won-quick-grid">
+        <div class="won-quick-item">
+          <div class="won-quick-icon">💸</div>
+          <span>이체</span>
+        </div>
+        <div class="won-quick-item">
+          <div class="won-quick-icon">📋</div>
+          <span>조회</span>
+        </div>
+        <div class="won-quick-item" onclick="location.href='scenario-a.html'" style="cursor:pointer;">
+          <div class="won-quick-icon" style="background:#E8F0FE;">📈</div>
+          <span style="color:#0046AD;font-weight:800;">펀드</span>
+        </div>
+        <div class="won-quick-item">
+          <div class="won-quick-icon">💳</div>
+          <span>카드</span>
+        </div>
+        <div class="won-quick-item">
+          <div class="won-quick-icon">🏠</div>
+          <span>대출</span>
+        </div>
+      </div>
+
+      <!-- InterSteller AI 배너 -->
+      <div class="won-ai-banner" onclick="location.href='scenario-a.html'">
+        <div>
+          <div class="won-ai-badge">✨ NEW — AI 행원</div>
+          <div class="won-ai-title">InterSteller</div>
+          <div class="won-ai-sub">행원처럼 설명합니다. 당신 편에서만.</div>
+        </div>
+        <div style="font-size:52px;line-height:1;">🤖</div>
+      </div>
+
+      <!-- 자산 현황 -->
+      <div class="won-section-hd">자산 현황</div>
+      <div class="won-asset-row">
+        <div class="won-asset-item">
+          <span class="won-asset-lbl">예금·적금</span>
+          <span class="won-asset-val">12,840,000원</span>
+        </div>
+        <div class="won-asset-item">
+          <span class="won-asset-lbl">펀드</span>
+          <span class="won-asset-val" style="color:#0046AD;">0원</span>
+        </div>
+      </div>
+
+      <!-- 펀드 추천 카드 -->
+      <div style="margin:0 16px 14px;background:#fff;border-radius:20px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:#0046AD;font-weight:700;margin-bottom:3px;">우리은행 AI 추천</div>
+          <div style="font-size:15px;font-weight:800;color:#1A1A1A;">나에게 맞는 펀드 찾기</div>
+          <div style="font-size:12px;color:#888;margin-top:3px;">AI가 투자성향 파악부터 도와드려요</div>
+        </div>
+        <button onclick="location.href='scenario-a.html'" style="background:#0046AD;color:#fff;border:none;border-radius:14px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">시작하기</button>
+      </div>
+
+      <!-- 시나리오 B 링크 (작게) -->
+      <div style="text-align:center;padding:0 0 28px;">
+        <a href="scenario-b.html" style="font-size:11px;color:#ccc;text-decoration:none;">
+          📋 시나리오 B 보기 (ARS 거절 경로)
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
