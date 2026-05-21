@@ -1055,7 +1055,7 @@
               { label: '시장 충격치(만원)', data: [principal, principal * 0.95, principal * 0.88, principal * 0.85, principal * 0.90, principal * 0.93].map(Math.round), borderColor: '#EF4444', tension: 0.2 }
             ]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
         };
       } else if (type === 'fee') {
         const baseFees = [120000, 240000, 360000, 480000, 600000];
@@ -1071,7 +1071,7 @@
               borderRadius: 4
             }]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
         };
       } else if (type === 'timeline') {
         config = {
@@ -1140,7 +1140,7 @@
               { label: '위기 손실(만원)', data: [principal, principal * 0.95, principal * 0.88, principal * 0.85, principal * 0.90, principal * 0.93].map(Math.round), borderColor: '#EF4444', tension: 0.2 }
             ]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
         };
       } else if (type === 'fee') {
         titleEl.innerText = "5개년 누적 수수료 보수";
@@ -1159,7 +1159,7 @@
               borderRadius: 4
             }]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } }
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 8, font: { size: 9 } } } } }
         };
       } else if (type === 'timeline') {
         titleEl.innerText = "영업일 기준 환매 대기 일정";
@@ -1476,7 +1476,8 @@
       }
 
       document.getElementById('solo-propensity-result').innerText = userPropensity;
-      document.getElementById('solo-match-fund-title').innerText = userPropensity === '적극투자형' ? PRODUCTS_DB.stock.name : PRODUCTS_DB.bond.name;
+      const soloMatchFundEl = document.getElementById('solo-match-fund-title');
+      if (soloMatchFundEl) soloMatchFundEl.innerText = userPropensity === '적극투자형' ? PRODUCTS_DB.stock.name : PRODUCTS_DB.bond.name;
 
       renderSoloPropensityChart(finalData);
     }
@@ -1815,4 +1816,5 @@
     }
   </script>
 </body>
+</html>
 </html>
